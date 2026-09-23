@@ -6,7 +6,7 @@ export default defineConfig(async () => {
     vite: {
       server: {
         proxy: {
-          '/api/manager': {
+          '/api/front': {
             changeOrigin: true,
             target: 'http://127.0.0.1:8006',
             ws: true,
