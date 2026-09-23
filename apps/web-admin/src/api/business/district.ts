@@ -27,7 +27,10 @@ export async function getAllDistricts(): Promise<District[]> {
     ),
   );
 
-  return [firstPage, ...remainingPages].flatMap((page) => page.items);
+  // JSONBigInt 返回无原型对象，VXE 树表格需要行对象的 hasOwnProperty。
+  return [firstPage, ...remainingPages].flatMap((page) =>
+    page.items.map((district) => ({ ...district })),
+  );
 }
 
 export function createDistrict(data: Record<string, unknown>) {
