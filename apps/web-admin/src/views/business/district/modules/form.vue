@@ -18,6 +18,7 @@ const [Form, formApi] = useVbenForm({
   layout: 'vertical',
   schema: useFormSchema(),
   showDefaultActions: false,
+  wrapperClass: 'gap-y-4',
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {

@@ -2,6 +2,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { District } from '#/api/business/district';
 
+import { z } from '#/adapter/form';
+
 const levelOptions = [
   { label: '省', value: 1 },
   { label: '市', value: 2 },
@@ -16,20 +18,34 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      componentProps: { class: 'w-full', maxLength: 100 },
       fieldName: 'name',
       label: '名称',
-      rules: 'required',
+      rules: z.string().min(1, '请输入名称').max(100, '名称不能超过 100 字'),
     },
     {
-      component: 'Select',
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        options: statusOptions,
+        optionType: 'button',
+      },
       fieldName: 'status',
       label: '状态',
-      componentProps: { options: statusOptions, allowClear: true },
     },
     {
       component: 'InputNumber',
+      componentProps: { class: 'w-full', min: 0, precision: 0, step: 1 },
       fieldName: 'sort_order',
       label: '排序',
+      help: '数字越小越靠前',
+      rules: z
+        .number({
+          invalid_type_error: '请输入排序值',
+          required_error: '请输入排序值',
+        })
+        .int('排序值必须为整数')
+        .min(0, '排序值不能小于 0'),
     },
   ];
 }
