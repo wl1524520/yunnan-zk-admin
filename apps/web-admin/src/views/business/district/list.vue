@@ -44,7 +44,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id' },
-    toolbarConfig: { custom: true, refresh: true, zoom: true },
+    toolbarConfig: { custom: false, refresh: true, zoom: true },
     treeConfig: {
       parentField: 'parent_id',
       rowField: 'id',
