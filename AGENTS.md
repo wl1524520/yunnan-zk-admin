@@ -5,7 +5,7 @@
 ## 目录结构
 
 - `apps/web-admin`（`@vben/web-admin`）— 平台端，dev 端口 9527
-- `apps/web-front`（`@vben/web-front`）— 学校端，dev 端口 9528
+- `apps/web-front`（`@vben/web-front`）— 业务端，dev 端口 9528
 - `apps/backend-mock`（`@vben/backend-mock`）— 上游 Nitro mock 服务（端口 5320），仅供 playground 使用
 - `playground`（`@vben/playground`）— 上游演示项目（dev 端口 5555），与上游 v5.7.0 保持一致
 - `packages/*` — vben 框架包（`@core`、`effects`、`stores` 等）
@@ -34,7 +34,7 @@ pnpm dev:play               # 启动 playground 演示项目（5555），进程�
 - `apps/web-admin` 和 `apps/web-front` 都由 `playground` 复制修改而来；这两个应用新增或修改页面时，优先参考 `playground` 中的页面实现。
 - Lefthook pre-commit 每次提交都跑完整 `pnpm lint` + `pnpm check:type`；commit-msg 跑 commitlint（约定式提交，如 `feat(@vben/web-admin): ...`）。提交信息可以用中文。
 - 应用内导入别名是 `#/*` → `./src/*`（不是 `@/`）。
-- dev 需要本地后端运行在 `http://127.0.0.1:8002`。两个业务应用都代理 `/api` 并重写：web-admin → `/api/admin`，web-front → `/api/front`（见 `apps/*/vite.config.ts`），业务端的 Nitro mock 已关闭（`VITE_NITRO_MOCK=false`）。只有 playground 使用 Nitro mock（`VITE_NITRO_MOCK=true`，dev 时由 vite 插件在 5320 端口进程内启动 `apps/backend-mock`）。
+- dev 需要本地后端运行在 `http://127.0.0.1:8006`。两个业务应用都代理 `/api` 并重写：web-admin → `/api/admin`，web-front → `/api/front`（见 `apps/*/vite.config.ts`），业务端的 Nitro mock 已关闭（`VITE_NITRO_MOCK=false`）。只有 playground 使用 Nitro mock（`VITE_NITRO_MOCK=true`，dev 时由 vite 插件在 5320 端口进程内启动 `apps/backend-mock`）。
 - `apps/backend-mock` 的 eslint 豁免（`no-console`、`n/*` 规则）在根 `eslint.config.mjs` 中维护（上游放在 internal/lint-configs，本仓库不改 internal）。
 - `pnpm check:cspell` 会检查所有 `**/*.ts` 以及 README 和 changesets（测试文件被忽略）。新增领域术语要加进 `cspell.json` 的 `words`。
 - UI 库是 `antdv-next`；路由使用 hash 模式；API 响应中的 BigInt ID 由 `json-bigint` 处理（见 `apps/*/src/api/request.ts`）。
