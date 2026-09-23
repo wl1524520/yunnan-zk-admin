@@ -31,7 +31,7 @@ pnpm dev:play               # 启动 playground 演示项目（5555），进程�
 
 ## 注意事项
 
-- `apps/web-admin` 和 `apps/web-front` 都由 `playground` 复制修改而来；这两个应用新增或修改页面时，优先参考 `playground` 中的页面实现。
+- `apps/web-admin` 和 `apps/web-front` 都由 `playground` 复制修改而来；新增或修改功能时，先查找并优先参考 `playground` 中相近的演示代码，沿用适用的目录组织与实现风格。没有对应示例或示例与现有业务契约冲突时，以业务契约和仓库约定为准。
 - Lefthook pre-commit 每次提交都跑完整 `pnpm lint` + `pnpm check:type`；commit-msg 跑 commitlint（约定式提交，如 `feat(@vben/web-admin): ...`）。提交信息可以用中文。
 - 应用内导入别名是 `#/*` → `./src/*`（不是 `@/`）。
 - dev 需要本地后端运行在 `http://127.0.0.1:8006`。两个业务应用都代理 `/api` 并重写：web-admin → `/api/admin`，web-front → `/api/front`（见 `apps/*/vite.config.ts`），业务端的 Nitro mock 已关闭（`VITE_NITRO_MOCK=false`）。只有 playground 使用 Nitro mock（`VITE_NITRO_MOCK=true`，dev 时由 vite 插件在 5320 端口进程内启动 `apps/backend-mock`）。
