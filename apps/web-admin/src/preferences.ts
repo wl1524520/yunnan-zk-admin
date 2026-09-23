@@ -8,12 +8,19 @@ import { defineOverridesPreferences } from '@vben/preferences';
 export const overridesPreferences = defineOverridesPreferences({
   app: {
     accessMode: 'frontend',
+    authPageLayout: 'panel-center',
     defaultHomePath: '/home',
     enablePreferences: false,
     enableRefreshToken: false,
     locale: 'zh-CN',
     name: import.meta.env.VITE_APP_TITLE,
     timezone: 'Asia/Shanghai',
+  },
+  breadcrumb: {
+    enable: false,
+  },
+  theme: {
+    mode: 'light',
   },
   widget: {
     globalSearch: false,
