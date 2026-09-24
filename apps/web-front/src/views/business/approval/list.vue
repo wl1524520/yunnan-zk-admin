@@ -31,7 +31,7 @@ const ownSchoolId = computed(
 );
 const ownDistrictId = computed(
   () =>
-    (userStore.userInfo as null | { district?: { id: number } })?.district?.id,
+    (userStore.userInfo as null | { district?: { id: string } })?.district?.id,
 );
 const selected = ref<ApprovalCase>();
 const saving = ref(false);

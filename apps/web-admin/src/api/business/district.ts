@@ -4,10 +4,10 @@ import { requestClient } from '#/api/request';
 
 export interface District {
   full_name: string;
-  id: number;
+  id: string;
   level: number;
   name: string;
-  parent_id: null | number;
+  parent_id: null | string;
   sort_order: number;
   status: 'active' | 'inactive';
   [key: string]: unknown;
@@ -37,14 +37,25 @@ export function createDistrict(data: Record<string, unknown>) {
   return requestClient.post('/districts', data);
 }
 
-export function updateDistrict(id: number, data: Record<string, unknown>) {
+export function updateDistrict(id: string, data: Record<string, unknown>) {
   return requestClient.request(`/districts/${id}`, { data, method: 'PATCH' });
 }
 
-export async function getDistrictOptions() {
+async function districtOptions(activeOnly: boolean) {
   const districts = await getAllDistricts();
-  return districts.map((item) => ({
+  const available = activeOnly
+    ? districts.filter((district) => district.status === 'active')
+    : districts;
+  return available.map((item) => ({
     label: [item.id, item.name].filter(Boolean).join(' '),
     value: item.id,
   }));
+}
+
+export function getDistrictOptions() {
+  return districtOptions(false);
+}
+
+export function getActiveDistrictOptions() {
+  return districtOptions(true);
 }

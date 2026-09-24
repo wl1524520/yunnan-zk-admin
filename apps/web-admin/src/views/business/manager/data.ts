@@ -2,7 +2,10 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { Manager } from '#/api/business/manager';
 
-import { getDistrictOptions } from '#/api/business/district';
+import {
+  getActiveDistrictOptions,
+  getDistrictOptions,
+} from '#/api/business/district';
 import { getSchoolOptions } from '#/api/business/school';
 
 const roleOptions = [
@@ -55,7 +58,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'district_id',
       label: '所属地区',
-      componentProps: { api: getDistrictOptions, allowClear: true },
+      componentProps: { api: getActiveDistrictOptions, allowClear: true },
     });
   if (!isEdit)
     schema.push({

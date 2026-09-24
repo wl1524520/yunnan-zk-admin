@@ -2,7 +2,10 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { School } from '#/api/business/school';
 
-import { getDistrictOptions } from '#/api/business/district';
+import {
+  getActiveDistrictOptions,
+  getDistrictOptions,
+} from '#/api/business/district';
 
 const schooltypeOptions = [
   { label: '初中', value: 'junior_high' },
@@ -36,7 +39,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'district_id',
       label: '所在地区',
-      componentProps: { api: getDistrictOptions, allowClear: true },
+      componentProps: { api: getActiveDistrictOptions, allowClear: true },
       rules: isEdit ? undefined : 'required',
     });
   if (!isEdit)
@@ -44,7 +47,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'supervising_district_id',
       label: '主管地区',
-      componentProps: { api: getDistrictOptions, allowClear: true },
+      componentProps: { api: getActiveDistrictOptions, allowClear: true },
       rules: isEdit ? undefined : 'required',
     });
   schema.push(
@@ -52,7 +55,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'filing_district_id',
       label: '备案地区',
-      componentProps: { api: getDistrictOptions, allowClear: true },
+      componentProps: { api: getActiveDistrictOptions, allowClear: true },
     },
     { component: 'Input', fieldName: 'address', label: '地址' },
     {

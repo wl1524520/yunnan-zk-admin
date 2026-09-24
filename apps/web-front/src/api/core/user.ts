@@ -3,7 +3,7 @@ import type { UserInfo } from '@vben/types';
 import { requestClient } from '#/api/request';
 
 interface DistrictOrganization {
-  id: number;
+  id: string;
   name: string;
 }
 

@@ -1,7 +1,11 @@
 import JSONBigInt from 'json-bigint';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getAllDistricts, getDistrictOptions } from './district';
+import {
+  getActiveDistrictOptions,
+  getAllDistricts,
+  getDistrictOptions,
+} from './district';
 
 const request = vi.hoisted(() => ({ get: vi.fn() }));
 
@@ -15,9 +19,9 @@ describe('getAllDistricts', () => {
       JSONBigInt({ storeAsString: true, strict: true }).parse(
         JSON.stringify({
           items: [
-            { id: 53, parent_id: null, name: '云南省' },
-            { id: 5301, parent_id: 53, name: '昆明市' },
-            { id: 5303, parent_id: 53, name: '曲靖市' },
+            { id: '53', parent_id: null, name: '云南省' },
+            { id: '5301', parent_id: '53', name: '昆明市' },
+            { id: '5303', parent_id: '53', name: '曲靖市' },
           ],
           total: 3,
         }),
@@ -40,19 +44,34 @@ describe('getDistrictOptions', () => {
   it('uses district ids from every page as option values', async () => {
     request.get
       .mockResolvedValueOnce({
-        items: [{ id: 530_000, name: '云南省' }],
+        items: [{ id: '53', name: '云南省' }],
         total: 101,
       })
       .mockResolvedValueOnce({
-        items: [{ id: 530_100, name: '昆明市' }],
+        items: [{ id: '5301', name: '昆明市' }],
         total: 101,
       });
 
     const options = await getDistrictOptions();
 
     expect(options).toEqual([
-      { label: '530000 云南省', value: 530_000 },
-      { label: '530100 昆明市', value: 530_100 },
+      { label: '53 云南省', value: '53' },
+      { label: '5301 昆明市', value: '5301' },
     ]);
   });
+});
+
+it('offers only active districts for new assignments', async () => {
+  request.get.mockReset();
+  request.get.mockResolvedValue({
+    items: [
+      { id: '53', name: '云南省', status: 'active' },
+      { id: '5301', name: '昆明市', status: 'inactive' },
+    ],
+    total: 2,
+  });
+
+  expect(await getActiveDistrictOptions()).toEqual([
+    { label: '53 云南省', value: '53' },
+  ]);
 });
