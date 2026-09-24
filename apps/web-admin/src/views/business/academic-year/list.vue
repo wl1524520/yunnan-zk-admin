@@ -76,8 +76,8 @@ async function saveTerm(term: AcademicTerm) {
 </script>
 
 <template>
-  <!-- eslint-disable vue/html-closing-bracket-newline -->
   <Page auto-content-height>
+    <!-- eslint-disable vue/html-closing-bracket-newline -->
     <FormDrawer @success="gridApi.query()" />
     <Grid table-title="学年与学期">
       <template #toolbar-tools>

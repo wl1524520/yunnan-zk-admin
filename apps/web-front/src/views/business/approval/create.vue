@@ -367,11 +367,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- eslint-disable vue/html-closing-bracket-newline -->
   <Page
     title="发起审批"
     description="学校按申请类型填写事实，平台按规则与当前范围复核。"
   >
+    <!-- eslint-disable vue/html-closing-bracket-newline -->
     <Card>
       <CommonForm />
 

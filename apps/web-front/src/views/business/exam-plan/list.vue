@@ -105,12 +105,12 @@ async function updateDeadline() {
 </script>
 
 <template>
-  <!-- eslint-disable vue/html-closing-bracket-newline -->
   <Page
     title="考试计划"
     description="教体局创建和发布计划；学校与教师查看本校已发布计划及应考名单。"
     auto-content-height
   >
+    <!-- eslint-disable vue/html-closing-bracket-newline -->
     <FormDrawer @success="gridApi.query()" />
     <Grid>
       <template #toolbar-tools>

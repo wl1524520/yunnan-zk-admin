@@ -139,11 +139,11 @@ function display(value: unknown): string {
 </script>
 
 <template>
-  <!-- eslint-disable vue/html-closing-bracket-newline -->
   <Page
     title="授权统计"
     description="按学生当前学校与班级计算；比率保留后端固定口径和分母。"
   >
+    <!-- eslint-disable vue/html-closing-bracket-newline -->
     <Card class="mb-4">
       <div class="flex flex-wrap items-end gap-3">
         <FilterForm />
