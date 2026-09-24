@@ -5,22 +5,17 @@ import type {
 } from '#/adapter/vxe-table';
 import type { School } from '#/api/business/school';
 
-import { onMounted, reactive } from 'vue';
-
 import { Page, useVbenDrawer } from '@vben/common-ui';
 
 import { Button } from 'antdv-next';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getDistrictOptions } from '#/api/business/district';
 import { getSchoolList } from '#/api/business/school';
 
 import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const canWrite = true;
-const lookupLabels = reactive<Record<string, string>>({});
-
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
   destroyOnClose: true,
@@ -28,7 +23,7 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: { schema: useGridFormSchema(), submitOnChange: true },
   gridOptions: {
-    columns: useColumns(onActionClick, canWrite, lookupLabels),
+    columns: useColumns(onActionClick, canWrite),
     height: 'auto',
     pagerConfig: { pageSize: 20 },
     proxyConfig: {
@@ -49,11 +44,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
 function onActionClick({ code, row }: OnActionClickParams<School>) {
   if (code === 'edit') formDrawerApi.setData(row).open();
 }
-
-onMounted(async () => {
-  for (const option of await getDistrictOptions())
-    lookupLabels[String(option.value)] = option.label;
-});
 </script>
 
 <template>

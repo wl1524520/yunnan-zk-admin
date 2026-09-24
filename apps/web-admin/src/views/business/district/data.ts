@@ -61,7 +61,7 @@ export function useColumns(
       title: '名称',
       treeNode: true,
     },
-    { field: 'code', title: '代码' },
+    { field: 'id', title: '地区编码' },
     {
       field: 'level',
       title: '级别',

@@ -53,7 +53,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   if (!isEdit)
     schema.push({
       component: 'ApiSelect',
-      fieldName: 'district_code',
+      fieldName: 'district_id',
       label: '所属地区',
       componentProps: { api: getDistrictOptions, allowClear: true },
     });
@@ -83,7 +83,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'ApiSelect',
-      fieldName: 'district_code',
+      fieldName: 'district_id',
       label: '所属地区',
       componentProps: { allowClear: true, api: getDistrictOptions },
     },

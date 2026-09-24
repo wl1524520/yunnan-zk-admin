@@ -29,10 +29,9 @@ const role = computed(() => userStore.userInfo?.roles?.[0] || '');
 const ownSchoolId = computed(
   () => (userStore.userInfo as null | { school?: { id: string } })?.school?.id,
 );
-const ownDistrictCode = computed(
+const ownDistrictId = computed(
   () =>
-    (userStore.userInfo as null | { district?: { code: string } })?.district
-      ?.code,
+    (userStore.userInfo as null | { district?: { id: number } })?.district?.id,
 );
 const selected = ref<ApprovalCase>();
 const saving = ref(false);
@@ -98,7 +97,7 @@ function isApplicant(row: ApprovalCase): boolean {
 function isReviewer(row: ApprovalCase): boolean {
   return (
     ['city', 'county', 'province'].includes(role.value) &&
-    row.direct_reviewer_district_code === ownDistrictCode.value
+    row.direct_reviewer_district_id === ownDistrictId.value
   );
 }
 

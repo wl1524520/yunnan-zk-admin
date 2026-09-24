@@ -2,7 +2,12 @@ import type { UserInfo } from '@vben/types';
 
 import { requestClient } from '#/api/request';
 
-interface Organization {
+interface DistrictOrganization {
+  id: number;
+  name: string;
+}
+
+interface SchoolOrganization {
   code: string;
   id: string;
   name: string;
@@ -13,14 +18,14 @@ interface Manager {
   name: string;
   role: string;
   username: string;
-  district?: null | Organization;
-  school?: null | Organization;
+  district?: DistrictOrganization | null;
+  school?: null | SchoolOrganization;
 }
 
 export interface ManagerUserInfo extends UserInfo {
   role: string;
-  district?: null | Organization;
-  school?: null | Organization;
+  district?: DistrictOrganization | null;
+  school?: null | SchoolOrganization;
 }
 
 export async function getUserInfoApi(): Promise<ManagerUserInfo> {

@@ -4,11 +4,12 @@ import { requestClient } from '#/api/request';
 
 export interface School {
   code: string;
-  district_code: string;
-  filing_district_code: null | string;
+  district_id: number;
+  district_full_name: string;
+  filing_district_id: null | number;
   id: string;
   name: string;
-  supervising_district_code: string;
+  supervising_district_id: number;
   [key: string]: unknown;
 }
 

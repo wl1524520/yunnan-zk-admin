@@ -13,7 +13,7 @@ import { updateDistrict } from '#/api/business/district';
 import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
-const editingId = ref<string>();
+const editingId = ref<number>();
 const [Form, formApi] = useVbenForm({
   layout: 'vertical',
   schema: useFormSchema(),

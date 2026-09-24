@@ -10,7 +10,7 @@ export interface ExamPlan {
   status: string;
   academic_term_id: string;
   academic_term?: AcademicTerm;
-  publisher_district_code: string;
+  publisher_district_id: number;
   starts_at: string;
   ends_at: string;
   schools: School[];

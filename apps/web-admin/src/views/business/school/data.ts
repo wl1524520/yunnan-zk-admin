@@ -34,7 +34,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   if (!isEdit)
     schema.push({
       component: 'ApiSelect',
-      fieldName: 'district_code',
+      fieldName: 'district_id',
       label: '所在地区',
       componentProps: { api: getDistrictOptions, allowClear: true },
       rules: isEdit ? undefined : 'required',
@@ -42,7 +42,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   if (!isEdit)
     schema.push({
       component: 'ApiSelect',
-      fieldName: 'supervising_district_code',
+      fieldName: 'supervising_district_id',
       label: '主管地区',
       componentProps: { api: getDistrictOptions, allowClear: true },
       rules: isEdit ? undefined : 'required',
@@ -50,7 +50,7 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   schema.push(
     {
       component: 'ApiSelect',
-      fieldName: 'filing_district_code',
+      fieldName: 'filing_district_id',
       label: '备案地区',
       componentProps: { api: getDistrictOptions, allowClear: true },
     },
@@ -75,7 +75,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'ApiSelect',
-      fieldName: 'district_code',
+      fieldName: 'district_id',
       label: '所在地区',
       componentProps: { allowClear: true, api: getDistrictOptions },
     },
@@ -91,7 +91,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
 export function useColumns(
   onActionClick: OnActionClickFn<School>,
   canWrite = true,
-  lookupLabels: Record<string, string> = {},
 ): VxeTableGridColumns<School> {
   return [
     { field: 'code', title: '代码' },
@@ -116,10 +115,10 @@ export function useColumns(
       },
     },
     {
-      field: 'district_code',
+      field: 'district_full_name',
       title: '所在地区',
-      formatter: ({ cellValue }) =>
-        lookupLabels[String(cellValue)] ?? String(cellValue ?? '—'),
+      minWidth: 260,
+      formatter: ({ cellValue }) => String(cellValue ?? '—'),
     },
     {
       field: 'operation',

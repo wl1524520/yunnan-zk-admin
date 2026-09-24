@@ -3,11 +3,11 @@ import type { PageResult } from './types';
 import { requestClient } from '#/api/request';
 
 export interface District {
-  code: string;
-  id: string;
+  full_name: string;
+  id: number;
   level: number;
   name: string;
-  parent_id: null | string;
+  parent_id: null | number;
   sort_order: number;
   status: 'active' | 'inactive';
   [key: string]: unknown;
@@ -37,14 +37,14 @@ export function createDistrict(data: Record<string, unknown>) {
   return requestClient.post('/districts', data);
 }
 
-export function updateDistrict(id: string, data: Record<string, unknown>) {
+export function updateDistrict(id: number, data: Record<string, unknown>) {
   return requestClient.request(`/districts/${id}`, { data, method: 'PATCH' });
 }
 
 export async function getDistrictOptions() {
   const districts = await getAllDistricts();
   return districts.map((item) => ({
-    label: [item.code, item.name].filter(Boolean).join(' '),
-    value: item.code,
+    label: [item.id, item.name].filter(Boolean).join(' '),
+    value: item.id,
   }));
 }
