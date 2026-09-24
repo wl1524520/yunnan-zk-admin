@@ -29,14 +29,20 @@ pnpm dev:play               # 启动 playground 演示项目（5555），进程�
 
 用 `pnpm -F @vben/web-admin run <script>` 只针对单个包执行（如 Playwright 的 `test:e2e`）。
 
+## 编码规范
+
+- 使用 Oxfmt 统一代码格式；缩进、引号、尾逗号等以本仓库的格式化配置为准。
+- 使用 Oxlint 检查 JavaScript/TypeScript，使用 ESLint 检查 Vue、JSONC、YAML，使用 Stylelint 检查 Vue 组件及 CSS、Less、SCSS 中的样式；修复相关检查报错。
+- 使用 Cspell 检查拼写。`pnpm check:cspell` 覆盖 TypeScript 文件、README 和 changesets；新增领域术语时加入 `cspell.json` 的 `words`。
+- 完成代码修改后运行 `pnpm lint` 和 `pnpm check:type`，涉及拼写时运行 `pnpm check:cspell`。Lefthook 的 pre-commit 会运行完整的 `pnpm lint` 和 `pnpm check:type`。
+- 提交信息遵循 Commitlint 的约定式格式，使用准确的中文摘要，例如 `feat(@vben/web-admin): 新增考生查询`；Lefthook 的 commit-msg 会检查提交信息。
+
 ## 注意事项
 
 - `apps/web-admin` 和 `apps/web-front` 都由 `playground` 复制修改而来；新增或修改功能时，先查找并优先参考 `playground` 中相近的演示代码，沿用适用的目录组织与实现风格。没有对应示例或示例与现有业务契约冲突时，以业务契约和仓库约定为准。
-- Lefthook pre-commit 每次提交都跑完整 `pnpm lint` + `pnpm check:type`；commit-msg 跑 commitlint（约定式提交，如 `feat(@vben/web-admin): ...`）。提交信息可以用中文。
 - 应用内导入别名是 `#/*` → `./src/*`（不是 `@/`）。
 - dev 需要本地后端运行在 `http://127.0.0.1:8006`。两个业务应用都代理 `/api` 并重写：web-admin → `/api/admin`，web-front → `/api/front`（见 `apps/*/vite.config.ts`），业务端的 Nitro mock 已关闭（`VITE_NITRO_MOCK=false`）。只有 playground 使用 Nitro mock（`VITE_NITRO_MOCK=true`，dev 时由 vite 插件在 5320 端口进程内启动 `apps/backend-mock`）。
 - `apps/backend-mock` 的 eslint 豁免（`no-console`、`n/*` 规则）在根 `eslint.config.mjs` 中维护（上游放在 internal/lint-configs，本仓库不改 internal）。
-- `pnpm check:cspell` 会检查所有 `**/*.ts` 以及 README 和 changesets（测试文件被忽略）。新增领域术语要加进 `cspell.json` 的 `words`。
 - UI 库是 `antdv-next`；路由使用 hash 模式；API 响应中的 BigInt ID 由 `json-bigint` 处理（见 `apps/*/src/api/request.ts`）。
 - 业务代码、注释、菜单/路由命名均为中文 — 保持一致。
 
