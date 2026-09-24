@@ -3,6 +3,7 @@ import type { UserInfo } from '@vben/types';
 import { requestClient } from '#/api/request';
 
 interface Organization {
+  code: string;
   id: string;
   name: string;
 }

@@ -28,7 +28,7 @@ const isBureau = computed(
       ['city', 'county', 'province'].includes(role),
     ) ?? false,
 );
-const districtId = computed(() => userStore.userInfo?.district?.id);
+const districtCode = computed(() => userStore.userInfo?.district?.code);
 const deadlineOpen = ref(false);
 const deadlinePlan = ref<ExamPlan>();
 const saving = ref(false);
@@ -60,7 +60,7 @@ function formatDate(value: string) {
 }
 
 function canOperate(plan: ExamPlan) {
-  return isBureau.value && plan.publisher_district_id === districtId.value;
+  return isBureau.value && plan.publisher_district_code === districtCode.value;
 }
 
 function runAction(plan: ExamPlan, action: 'cancel' | 'close' | 'publish') {

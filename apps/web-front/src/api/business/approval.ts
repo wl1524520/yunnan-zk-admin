@@ -27,7 +27,7 @@ export interface ApprovalCase {
   reason: string;
   school_id: string;
   school?: { name: string };
-  direct_reviewer_district_id: string;
+  direct_reviewer_district_code: string;
   items: ApprovalItem[];
   attachments?: Attachment[];
   events?: { comment?: string; event_type: string; occurred_at: string }[];

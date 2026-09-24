@@ -1,7 +1,7 @@
 import JSONBigInt from 'json-bigint';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getAllDistricts } from './district';
+import { getAllDistricts, getDistrictOptions } from './district';
 
 const request = vi.hoisted(() => ({ get: vi.fn() }));
 
@@ -31,5 +31,28 @@ describe('getAllDistricts', () => {
       expect(Object.getPrototypeOf(row)).toBe(Object.prototype);
       expect(typeof row.hasOwnProperty).toBe('function');
     }
+  });
+});
+
+describe('getDistrictOptions', () => {
+  beforeEach(() => request.get.mockReset());
+
+  it('uses district codes from every page as option values', async () => {
+    request.get
+      .mockResolvedValueOnce({
+        items: [{ code: '530000', id: 'province-id', name: '云南省' }],
+        total: 101,
+      })
+      .mockResolvedValueOnce({
+        items: [{ code: '530100', id: 'city-id', name: '昆明市' }],
+        total: 101,
+      });
+
+    const options = await getDistrictOptions();
+
+    expect(options).toEqual([
+      { label: '530000 云南省', value: '530000' },
+      { label: '530100 昆明市', value: '530100' },
+    ]);
   });
 });

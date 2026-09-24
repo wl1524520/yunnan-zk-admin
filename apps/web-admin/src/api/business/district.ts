@@ -42,9 +42,9 @@ export function updateDistrict(id: string, data: Record<string, unknown>) {
 }
 
 export async function getDistrictOptions() {
-  const result = await getDistrictList({ page: 1, per_page: 100 });
-  return result.items.map((item) => ({
+  const districts = await getAllDistricts();
+  return districts.map((item) => ({
     label: [item.code, item.name].filter(Boolean).join(' '),
-    value: item.id,
+    value: item.code,
   }));
 }

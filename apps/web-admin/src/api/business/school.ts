@@ -3,7 +3,12 @@ import type { PageResult } from './types';
 import { requestClient } from '#/api/request';
 
 export interface School {
+  code: string;
+  district_code: string;
+  filing_district_code: null | string;
   id: string;
+  name: string;
+  supervising_district_code: string;
   [key: string]: unknown;
 }
 
