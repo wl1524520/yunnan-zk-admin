@@ -3,9 +3,8 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ScoreRow } from '#/api/business/scorebook';
 
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
-import { Page } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 
 import { Alert, Card, Tag } from 'antdv-next';
 
@@ -13,12 +12,16 @@ import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getScorebook } from '#/api/business/scorebook';
 
+import Detail from '../student/modules/detail.vue';
 import { useColumns, useFilterSchema } from './data';
 
-const router = useRouter();
 const academicTermId = ref('');
 const caliber = ref('');
 const generatedAt = ref('');
+const [DetailDrawer, detailDrawerApi] = useVbenDrawer({
+  connectedComponent: Detail,
+  destroyOnClose: true,
+});
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     columns: useColumns(),
@@ -65,6 +68,7 @@ const [FilterForm] = useVbenForm({
     description="分数未形成时保持空值；档案和成绩按学生当前学校、班级归属。"
     auto-content-height
   >
+    <DetailDrawer @success="gridApi.query()" />
     <Card class="mb-4"><FilterForm /></Card>
     <Alert
       v-if="caliber"
@@ -87,7 +91,7 @@ const [FilterForm] = useVbenForm({
       </template>
       <template #total="{ row }">{{ row.total_score?.score ?? '—' }}</template>
       <template #action="{ row }">
-        <a @click="router.push(`/students/${row.student.id}`)">查看档案</a>
+        <a @click="detailDrawerApi.setData(row.student).open()">查看档案</a>
       </template>
       <template #items="{ row }">
         <div class="flex flex-wrap gap-2">

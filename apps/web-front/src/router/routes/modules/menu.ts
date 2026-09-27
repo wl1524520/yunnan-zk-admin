@@ -28,12 +28,6 @@ const routes: RouteRecordRaw[] = [
     path: '/students',
   },
   {
-    component: () => import('#/views/business/student/detail.vue'),
-    meta: { hideInMenu: true, title: '学生详情' },
-    name: 'StudentDetail',
-    path: '/students/:id',
-  },
-  {
     component: () => import('#/views/business/school-class/list.vue'),
     meta: {
       authority: schoolRoles,

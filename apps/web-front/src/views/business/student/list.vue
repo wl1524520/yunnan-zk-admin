@@ -6,7 +6,6 @@ import type {
 import type { Student } from '#/api/business/student';
 
 import { onMounted, reactive } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
@@ -18,13 +17,17 @@ import { getSchoolClassOptions } from '#/api/business/school-class';
 import { getStudentList } from '#/api/business/student';
 
 import { useColumns, useGridFormSchema } from './data';
+import Detail from './modules/detail.vue';
 import Form from './modules/form.vue';
 
 const canWrite = useUserStore().userInfo?.roles?.includes('school') ?? false;
 const lookupLabels = reactive<Record<string, string>>({});
-const router = useRouter();
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
+  destroyOnClose: true,
+});
+const [DetailDrawer, detailDrawerApi] = useVbenDrawer({
+  connectedComponent: Detail,
   destroyOnClose: true,
 });
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -50,7 +53,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 function onActionClick({ code, row }: OnActionClickParams<Student>) {
   if (code === 'edit') formDrawerApi.setData(row).open();
-  if (code === 'detail') void router.push(`/students/${row.id}`);
+  if (code === 'detail') detailDrawerApi.setData(row).open();
 }
 
 onMounted(async () => {
@@ -63,6 +66,7 @@ onMounted(async () => {
 <template>
   <Page auto-content-height>
     <FormDrawer @success="gridApi.query()" />
+    <DetailDrawer @success="gridApi.query()" />
     <Grid table-title="学生档案">
       <template #toolbar-tools>
         <Button
