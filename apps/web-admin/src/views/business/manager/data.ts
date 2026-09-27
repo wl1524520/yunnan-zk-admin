@@ -50,7 +50,11 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'Select',
       fieldName: 'role',
       label: '角色',
-      componentProps: { options: roleOptions, allowClear: true },
+      componentProps: {
+        options: roleOptions,
+        allowClear: true,
+        class: 'w-full',
+      },
       rules: isEdit ? undefined : 'required',
     });
   if (!isEdit)
@@ -58,20 +62,36 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'district_id',
       label: '所属地区',
-      componentProps: { api: getActiveDistrictOptions, allowClear: true },
+      componentProps: {
+        allowClear: true,
+        api: getActiveDistrictOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择地区',
+        showSearch: true,
+      },
     });
   if (!isEdit)
     schema.push({
       component: 'ApiSelect',
       fieldName: 'school_id',
       label: '所属学校',
-      componentProps: { api: getSchoolOptions, allowClear: true },
+      componentProps: {
+        allowClear: true,
+        api: getSchoolOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择学校',
+        showSearch: true,
+      },
     });
   schema.push({
-    component: 'Select',
+    component: 'RadioGroup',
     fieldName: 'status',
     label: '状态',
-    componentProps: { options: statusOptions, allowClear: true },
+    componentProps: { options: statusOptions, optionType: 'radio' },
   });
   return schema;
 }

@@ -13,17 +13,25 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
     });
   if (isEdit)
     schema.push({
-      component: 'Input',
+      component: 'DatePicker',
       fieldName: 'starts_on',
       label: '开始日期',
-      componentProps: { type: 'date' },
+      componentProps: {
+        class: 'w-full',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+      },
     });
   if (isEdit)
     schema.push({
-      component: 'Input',
+      component: 'DatePicker',
       fieldName: 'ends_on',
       label: '结束日期',
-      componentProps: { type: 'date' },
+      componentProps: {
+        class: 'w-full',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+      },
     });
   return schema;
 }

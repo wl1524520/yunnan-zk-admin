@@ -9,7 +9,7 @@ import { ref } from 'vue';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 
-import { Button, Input, message, Modal } from 'antdv-next';
+import { Button, DatePicker, message, Modal } from 'antdv-next';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -104,11 +104,21 @@ async function saveTerm(term: AcademicTerm) {
       >
         <strong>第 {{ term.term_no }} 学期</strong>
         <label
-          >开始日期 <Input v-model:value="term.starts_on" type="date"
-        /></label>
+          >开始日期
+          <DatePicker
+            v-model:value="term.starts_on"
+            class="w-full"
+            value-format="YYYY-MM-DD"
+          />
+        </label>
         <label
-          >结束日期 <Input v-model:value="term.ends_on" type="date"
-        /></label>
+          >结束日期
+          <DatePicker
+            v-model:value="term.ends_on"
+            class="w-full"
+            value-format="YYYY-MM-DD"
+          />
+        </label>
         <Button :loading="termSaving" type="primary" @click="saveTerm(term)">
           保存
         </Button>

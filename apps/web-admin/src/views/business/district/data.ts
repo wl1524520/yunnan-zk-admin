@@ -26,9 +26,8 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       component: 'RadioGroup',
       componentProps: {
-        buttonStyle: 'solid',
         options: statusOptions,
-        optionType: 'button',
+        optionType: 'radio',
       },
       fieldName: 'status',
       label: '状态',

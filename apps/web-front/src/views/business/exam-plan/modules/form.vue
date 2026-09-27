@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { message } from 'antdv-next';
 
 import { useVbenForm } from '#/adapter/form';
@@ -12,10 +13,16 @@ import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
 const schoolKeyword = ref('');
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isHorizontal = computed(() => breakpoints.greaterOrEqual('md').value);
 const [Form, formApi] = useVbenForm({
-  layout: 'vertical',
+  commonConfig: {
+    colon: true,
+    formItemClass: 'col-span-2 md:col-span-1',
+  },
   schema: useFormSchema(schoolKeyword),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-1 gap-x-4',
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
@@ -56,5 +63,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer title="新建考试计划"><Form /></Drawer>
+  <Drawer class="w-full max-w-[800px]" title="新建考试计划">
+    <Form class="mx-4" :layout="isHorizontal ? 'horizontal' : 'vertical'" />
+  </Drawer>
 </template>

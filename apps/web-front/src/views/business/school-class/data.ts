@@ -27,7 +27,11 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'Select',
       fieldName: 'status',
       label: '状态',
-      componentProps: { options: statusOptions, allowClear: true },
+      componentProps: {
+        options: statusOptions,
+        allowClear: true,
+        class: 'w-full',
+      },
     },
   );
   return schema;

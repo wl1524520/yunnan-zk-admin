@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import type { District } from '#/api/business/district';
 
-import { nextTick, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { message } from 'antdv-next';
 
 import { useVbenForm } from '#/adapter/form';
@@ -14,11 +15,16 @@ import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
 const editingId = ref<string>();
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isHorizontal = computed(() => breakpoints.greaterOrEqual('md').value);
 const [Form, formApi] = useVbenForm({
-  layout: 'vertical',
+  commonConfig: {
+    colon: true,
+    formItemClass: 'col-span-2 md:col-span-1',
+  },
   schema: useFormSchema(),
   showDefaultActions: false,
-  wrapperClass: 'gap-y-4',
+  wrapperClass: 'grid-cols-1 gap-x-4',
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
@@ -60,5 +66,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer title="编辑地区"><Form /></Drawer>
+  <Drawer class="w-full max-w-[800px]" title="编辑地区">
+    <Form class="mx-4" :layout="isHorizontal ? 'horizontal' : 'vertical'" />
+  </Drawer>
 </template>

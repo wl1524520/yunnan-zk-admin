@@ -11,7 +11,14 @@ export function useFormSchema(schoolKeyword: Ref<string>): VbenFormSchema[] {
   return [
     {
       component: 'ApiSelect',
-      componentProps: { api: getAcademicTermOptions },
+      componentProps: {
+        api: getAcademicTermOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择学期',
+        showSearch: true,
+      },
       fieldName: 'academic_term_id',
       label: '学期',
       rules: 'required',
@@ -39,15 +46,25 @@ export function useFormSchema(schoolKeyword: Ref<string>): VbenFormSchema[] {
       rules: 'required',
     },
     {
-      component: 'Input',
-      componentProps: { type: 'datetime-local' },
+      component: 'DatePicker',
+      componentProps: {
+        class: 'w-full',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        showTime: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
       fieldName: 'starts_at',
       label: '开始时间',
       rules: 'required',
     },
     {
-      component: 'Input',
-      componentProps: { type: 'datetime-local' },
+      component: 'DatePicker',
+      componentProps: {
+        class: 'w-full',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        showTime: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
       fieldName: 'ends_at',
       label: '结束时间',
       rules: 'required',

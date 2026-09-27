@@ -4,6 +4,7 @@ import { computed, watch } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { message } from 'antdv-next';
 
 import { useVbenForm } from '#/adapter/form';
@@ -26,10 +27,16 @@ const resourceOptions = computed(() =>
     : resourceTypeOptions.filter((item) => item.value === 'students'),
 );
 
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isHorizontal = computed(() => breakpoints.greaterOrEqual('md').value);
 const [Form, formApi] = useVbenForm({
-  layout: 'vertical',
+  commonConfig: {
+    colon: true,
+    formItemClass: 'col-span-2 md:col-span-1',
+  },
   schema: useUploadSchema(resourceOptions.value),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-1 gap-x-4',
 });
 watch(resourceOptions, (options) => {
   formApi.setState({ schema: useUploadSchema(options) });
@@ -76,10 +83,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer title="上传导入文件" confirm-text="上传文件">
+  <Drawer
+    class="w-full max-w-[800px]"
+    title="上传导入文件"
+    confirm-text="上传文件"
+  >
     <p class="text-muted-foreground mb-3 text-sm">
       先上传文件，再校验预览；全部行通过后才能整批提交。
     </p>
-    <Form />
+    <Form class="mx-4" :layout="isHorizontal ? 'horizontal' : 'vertical'" />
   </Drawer>
 </template>

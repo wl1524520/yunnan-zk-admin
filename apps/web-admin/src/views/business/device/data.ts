@@ -36,14 +36,14 @@ export function useFormSchema(editing: boolean): VbenFormSchema[] {
       rules: 'required',
     },
     {
-      component: 'Select',
-      componentProps: { options: deviceTypeOptions },
+      component: 'RadioGroup',
+      componentProps: { options: deviceTypeOptions, optionType: 'radio' },
       fieldName: 'device_type',
       label: '类型',
     },
     {
-      component: 'Select',
-      componentProps: { options: statusOptions },
+      component: 'RadioGroup',
+      componentProps: { options: statusOptions, optionType: 'radio' },
       fieldName: 'status',
       label: '状态',
     },

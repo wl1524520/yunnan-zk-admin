@@ -39,7 +39,15 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'district_id',
       label: '所在地区',
-      componentProps: { api: getActiveDistrictOptions, allowClear: true },
+      componentProps: {
+        allowClear: true,
+        api: getActiveDistrictOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择所在地区',
+        showSearch: true,
+      },
       rules: isEdit ? undefined : 'required',
     });
   if (!isEdit)
@@ -47,7 +55,15 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'supervising_district_id',
       label: '主管地区',
-      componentProps: { api: getActiveDistrictOptions, allowClear: true },
+      componentProps: {
+        allowClear: true,
+        api: getActiveDistrictOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择主管地区',
+        showSearch: true,
+      },
       rules: isEdit ? undefined : 'required',
     });
   schema.push(
@@ -55,20 +71,32 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'filing_district_id',
       label: '备案地区',
-      componentProps: { api: getActiveDistrictOptions, allowClear: true },
+      componentProps: {
+        allowClear: true,
+        api: getActiveDistrictOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择备案地区',
+        showSearch: true,
+      },
     },
     { component: 'Input', fieldName: 'address', label: '地址' },
     {
       component: 'Select',
       fieldName: 'school_type',
       label: '学校类型',
-      componentProps: { options: schooltypeOptions, allowClear: true },
+      componentProps: {
+        options: schooltypeOptions,
+        allowClear: true,
+        class: 'w-full',
+      },
     },
     {
-      component: 'Select',
+      component: 'RadioGroup',
       fieldName: 'status',
       label: '状态',
-      componentProps: { options: statusOptions, allowClear: true },
+      componentProps: { options: statusOptions, optionType: 'radio' },
     },
   );
   return schema;

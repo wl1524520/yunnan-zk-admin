@@ -17,7 +17,10 @@ export function useProfileSchema(
   return [
     {
       component: 'Select',
-      componentProps: () => ({ options: yearOptions.value }),
+      componentProps: () => ({
+        class: 'w-full',
+        options: yearOptions.value,
+      }),
       fieldName: 'academic_year_id',
       label: '学年',
       rules: 'required',
@@ -25,6 +28,7 @@ export function useProfileSchema(
     {
       component: 'Select',
       componentProps: {
+        class: 'w-full',
         options: [7, 8, 9].map((grade) => ({
           label: `${grade} 年级`,
           value: grade,
@@ -41,7 +45,14 @@ export function useMovementSchema(): VbenFormSchema[] {
   return [
     {
       component: 'ApiSelect',
-      componentProps: { api: getSchoolClassOptions },
+      componentProps: {
+        api: getSchoolClassOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择班级',
+        showSearch: true,
+      },
       fieldName: 'target_school_class_id',
       label: '目标班级',
       rules: 'required',

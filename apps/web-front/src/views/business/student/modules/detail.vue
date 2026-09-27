@@ -17,6 +17,7 @@ import { computed, ref } from 'vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { Button, Card, Input, message, Modal, Space, Tag } from 'antdv-next';
 
 import { useVbenForm } from '#/adapter/form';
@@ -52,6 +53,8 @@ const userStore = useUserStore();
 const canWrite = computed(
   () => userStore.userInfo?.roles?.includes('school') ?? false,
 );
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isHorizontal = computed(() => breakpoints.greaterOrEqual('md').value);
 const student = ref<StudentDetail>();
 const movements = ref<Movement[]>([]);
 const gradeResults = ref<GradeResult[]>([]);
@@ -128,9 +131,13 @@ const [TermGrid, termGridApi] = useVbenVxeGrid({
 });
 
 const [ProfileForm, profileFormApi] = useVbenForm({
-  layout: 'vertical',
+  commonConfig: {
+    colon: true,
+    formItemClass: 'col-span-2 md:col-span-1',
+  },
   schema: useProfileSchema(yearOptions),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-1 gap-x-4',
 });
 const profileOpen = ref(false);
 
@@ -159,9 +166,13 @@ async function saveProfile() {
   }
 }
 const [MovementForm, movementFormApi] = useVbenForm({
-  layout: 'vertical',
+  commonConfig: {
+    colon: true,
+    formItemClass: 'col-span-2 md:col-span-1',
+  },
   schema: useMovementSchema(),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-1 gap-x-4',
 });
 
 async function load() {
@@ -377,7 +388,10 @@ function lockTerm(row: TermResult) {
       :confirm-loading="saving"
       @ok="saveProfile"
     >
-      <ProfileForm />
+      <ProfileForm
+        class="mx-4"
+        :layout="isHorizontal ? 'horizontal' : 'vertical'"
+      />
     </Modal>
     <Modal
       v-model:open="movementOpen"
@@ -385,7 +399,10 @@ function lockTerm(row: TermResult) {
       :confirm-loading="saving"
       @ok="saveMovement"
     >
-      <MovementForm />
+      <MovementForm
+        class="mx-4"
+        :layout="isHorizontal ? 'horizontal' : 'vertical'"
+      />
     </Modal>
   </Drawer>
 </template>

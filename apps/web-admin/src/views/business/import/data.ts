@@ -55,7 +55,11 @@ export function useUploadSchema(
   return [
     {
       component: 'Select',
-      componentProps: { options, placeholder: '导入类型' },
+      componentProps: {
+        class: 'w-full',
+        options,
+        placeholder: '请选择导入类型',
+      },
       fieldName: 'resource_type',
       label: '导入类型',
       rules: 'required',

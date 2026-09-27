@@ -37,17 +37,17 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   );
   if (!isEdit)
     schema.push({
-      component: 'Select',
+      component: 'RadioGroup',
       fieldName: 'role',
       label: '角色',
-      componentProps: { options: roleOptions, allowClear: true },
+      componentProps: { options: roleOptions, optionType: 'radio' },
       rules: isEdit ? undefined : 'required',
     });
   schema.push({
-    component: 'Select',
+    component: 'RadioGroup',
     fieldName: 'status',
     label: '状态',
-    componentProps: { options: statusOptions, allowClear: true },
+    componentProps: { options: statusOptions, optionType: 'radio' },
   });
   return schema;
 }

@@ -5,6 +5,7 @@ import { computed, nextTick, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { message } from 'antdv-next';
 
 import { useVbenForm } from '#/adapter/form';
@@ -14,10 +15,16 @@ import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
 const editingId = ref<string>();
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isHorizontal = computed(() => breakpoints.greaterOrEqual('md').value);
 const [Form, formApi] = useVbenForm({
-  layout: 'vertical',
+  commonConfig: {
+    colon: true,
+    formItemClass: 'col-span-2 md:col-span-1',
+  },
   schema: useFormSchema(false),
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-1 gap-x-4',
 });
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
@@ -61,5 +68,7 @@ const title = computed(() =>
 </script>
 
 <template>
-  <Drawer :title="title"><Form /></Drawer>
+  <Drawer class="w-full max-w-[800px]" :title="title">
+    <Form class="mx-4" :layout="isHorizontal ? 'horizontal' : 'vertical'" />
+  </Drawer>
 </template>
