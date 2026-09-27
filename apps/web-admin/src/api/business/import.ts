@@ -20,10 +20,13 @@ export interface ImportRow {
   regulation_package?: { code: string; name: string };
 }
 
-export function getImportList(page: number, perPage = 20) {
-  return requestClient.get<PageResult<ImportBatch>>('/imports', {
-    params: { page, per_page: perPage },
-  });
+export function getImportList(params: {
+  page: number;
+  per_page?: number;
+  resource_type?: string;
+  status?: string;
+}) {
+  return requestClient.get<PageResult<ImportBatch>>('/imports', { params });
 }
 
 export function uploadImport(data: FormData) {

@@ -1,25 +1,32 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { ImportBatch, ImportRow } from '#/api/business/import';
 
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
-import { Page } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
-import { Alert, Button, Card, message, Modal, Space, Tag } from 'antdv-next';
+import { Alert, Button, message, Modal, Space } from 'antdv-next';
 
-import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   getImportBatch,
   getImportList,
   getImportRows,
   runImportAction,
-  uploadImport,
 } from '#/api/business/import';
 
-import { useColumns, usePreviewColumns, useUploadSchema } from './data';
+import {
+  resourceTypeOptions,
+  useColumns,
+  useGridFormSchema,
+  usePreviewColumns,
+} from './data';
+import Upload from './modules/upload.vue';
 
 const userStore = useUserStore();
 const isAdmin = computed(
@@ -30,39 +37,41 @@ const isAdmin = computed(
 );
 const resourceOptions = computed(() =>
   isAdmin.value
-    ? [
-        { label: '地区', value: 'districts' },
-        { label: '学校', value: 'schools' },
-        { label: '班级', value: 'school_classes' },
-        { label: '教师', value: 'school_teachers' },
-      ]
-    : [{ label: '学生', value: 'students' }],
+    ? resourceTypeOptions.filter((item) => item.value !== 'students')
+    : resourceTypeOptions.filter((item) => item.value === 'students'),
 );
-const file = ref<File>();
 const saving = ref(false);
 const selected = ref<ImportBatch>();
 
-const [UploadForm, uploadFormApi] = useVbenForm({
-  layout: 'vertical',
-  schema: useUploadSchema(resourceOptions.value),
-  showDefaultActions: false,
-});
-watch(resourceOptions, (options) => {
-  uploadFormApi.setState({ schema: useUploadSchema(options) });
+const [UploadDrawer, uploadDrawerApi] = useVbenDrawer({
+  connectedComponent: Upload,
+  destroyOnClose: true,
 });
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    collapsed: false,
+    schema: useGridFormSchema(resourceOptions.value),
+    showCollapseButton: false,
+    submitOnChange: true,
+    wrapperClass: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-4',
+  },
   gridOptions: {
-    columns: useColumns(),
+    columns: useColumns(onActionClick),
     height: 'auto',
     pagerConfig: { pageSize: 20 },
     proxyConfig: {
       ajax: {
-        query: ({ page }) => getImportList(page.currentPage, page.pageSize),
+        query: ({ page }, formValues) =>
+          getImportList({
+            ...formValues,
+            page: page.currentPage,
+            per_page: page.pageSize,
+          }),
       },
     },
     rowConfig: { keyField: 'id' },
-    toolbarConfig: { refresh: true, zoom: true },
+    toolbarConfig: { custom: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<ImportBatch>,
 });
 
@@ -83,38 +92,8 @@ const [PreviewGrid, previewGridApi] = useVbenVxeGrid({
   } as VxeTableGridOptions<ImportRow>,
 });
 
-function selectFile(event: Event) {
-  file.value = (event.target as HTMLInputElement).files?.[0];
-}
-
-async function upload() {
-  const { valid } = await uploadFormApi.validate();
-  if (!valid || !file.value) {
-    message.error('请选择导入类型和文件');
-    return;
-  }
-  const { resource_type } = await uploadFormApi.getValues();
-  saving.value = true;
-  try {
-    const digest = await crypto.subtle.digest(
-      'SHA-256',
-      await file.value.arrayBuffer(),
-    );
-    const sha256 = [...new Uint8Array(digest)]
-      .map((byte) => byte.toString(16).padStart(2, '0'))
-      .join('');
-    const data = new FormData();
-    data.append('resource_type', String(resource_type));
-    data.append('file', file.value);
-    data.append('sha256', sha256);
-    data.append('request_id', crypto.randomUUID());
-    await uploadImport(data);
-    file.value = undefined;
-    message.success('文件已上传，请发起预览校验');
-    gridApi.query();
-  } finally {
-    saving.value = false;
-  }
+function onActionClick({ code, row }: OnActionClickParams<ImportBatch>) {
+  if (code === 'preview') openBatch(row.id);
 }
 
 async function openBatch(id: string) {
@@ -138,25 +117,13 @@ async function action(kind: 'commit' | 'validate') {
 </script>
 
 <template>
-  <Page
-    title="批量导入"
-    description="先上传文件，再校验预览；全部行通过后才能整批提交。"
-  >
-    <Card class="mb-4">
-      <Space wrap>
-        <UploadForm />
-        <input type="file" accept=".csv,.xls,.xlsx" @change="selectFile" />
-        <Button type="primary" :loading="saving" @click="upload">
+  <Page auto-content-height>
+    <UploadDrawer @success="gridApi.query()" />
+    <Grid table-title="批量导入">
+      <template #toolbar-tools>
+        <Button type="primary" @click="uploadDrawerApi.open()">
           上传文件
         </Button>
-      </Space>
-    </Card>
-    <Grid table-title="导入批次">
-      <template #status="{ row }">
-        <Tag>{{ row.status }}</Tag>
-      </template>
-      <template #action="{ row }">
-        <Button type="link" @click="openBatch(row.id)">预览</Button>
       </template>
     </Grid>
     <Modal
