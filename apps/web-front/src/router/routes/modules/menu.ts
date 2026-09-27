@@ -2,6 +2,9 @@ import type { RouteRecordRaw } from 'vue-router';
 
 const schoolRoles = ['school'];
 
+// 教师只能访问异常名单（其余分析视图后端 403）。
+const analysisRoles = ['province', 'city', 'county', 'school'];
+
 const routes: RouteRecordRaw[] = [
   {
     component: () => import('#/views/business/home/index.vue'),
@@ -78,14 +81,57 @@ const routes: RouteRecordRaw[] = [
     path: '/devices',
   },
   {
-    component: () => import('#/views/business/statistic/index.vue'),
     meta: {
       icon: 'lucide:chart-no-axes-combined',
       order: 18,
-      title: '成绩统计',
+      title: '成绩分析',
     },
-    name: 'Statistics',
-    path: '/statistics',
+    name: 'Analysis',
+    path: '/analysis',
+    redirect: '/analysis/overview',
+    children: [
+      {
+        component: () => import('#/views/business/analysis/overview/index.vue'),
+        meta: { authority: analysisRoles, title: '概览' },
+        name: 'AnalysisOverview',
+        path: 'overview',
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/item-bands/index.vue'),
+        meta: { authority: analysisRoles, title: '项目分档' },
+        name: 'AnalysisItemBands',
+        path: 'item-bands',
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/score-distribution/index.vue'),
+        meta: { authority: analysisRoles, title: '总分分布' },
+        name: 'AnalysisScoreDistribution',
+        path: 'score-distribution',
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/school-comparison/index.vue'),
+        meta: { authority: analysisRoles, title: '校际对比' },
+        name: 'AnalysisSchoolComparison',
+        path: 'school-comparison',
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/anomalies/index.vue'),
+        meta: { title: '异常名单' },
+        name: 'AnalysisAnomalies',
+        path: 'anomalies',
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/pending-approvals/index.vue'),
+        meta: { authority: analysisRoles, title: '待审批' },
+        name: 'AnalysisPendingApprovals',
+        path: 'pending-approvals',
+      },
+    ],
   },
   {
     component: () => import('#/views/business/scorebook/list.vue'),
