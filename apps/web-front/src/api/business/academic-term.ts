@@ -26,3 +26,14 @@ export async function getAcademicTermOptions() {
     value: term.id,
   }));
 }
+
+// 业务端无独立学年接口：学年选项由学期列表按学年去重得到。
+export async function getAcademicYearOptions() {
+  const { items } = await getAcademicTermList();
+  const years = new Map<string, string>();
+  for (const term of items) {
+    if (term.academic_year)
+      years.set(term.academic_year.id, term.academic_year.code);
+  }
+  return [...years.entries()].map(([value, label]) => ({ label, value }));
+}

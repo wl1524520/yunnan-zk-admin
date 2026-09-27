@@ -1,239 +1,274 @@
 <script lang="ts" setup>
-// cspell:ignore unbanded
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { StatisticsResult } from '#/api/business/statistic';
+import type {
+  AnomaliesResult,
+  ComparisonsResult,
+  ItemsResult,
+  OverviewResult,
+  PendingApprovalsResult,
+  StatisticView,
+  TotalScoresResult,
+} from '#/api/business/statistic';
 
-import { computed, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
-import { Alert, Button, Card, Statistic, Tag } from 'antdv-next';
+import { Card, Segmented, Statistic } from 'antdv-next';
 
-import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { getAcademicTermList } from '#/api/business/academic-term';
 import { getStatistics } from '#/api/business/statistic';
 
-import { useFilterSchema, useItemColumns } from './data';
+import { formatRate, useColumns, useGridFormSchema, viewOptions } from './data';
 
-const userStore = useUserStore();
-const isTeacher = computed(
-  () => userStore.userInfo?.roles?.includes('teacher') ?? false,
+const roles = useUserStore().userInfo?.roles ?? [];
+// 教师只能访问异常名单（其余视图后端 403）。
+const isTeacher = roles.includes('teacher');
+const showSchoolFilter = roles.some((role) =>
+  ['city', 'county', 'province'].includes(role),
 );
-const view = ref(isTeacher.value ? 'anomalies' : 'overview');
-const academicTermId = ref('');
-const grade = ref<number>();
-const gender = ref<string>();
-const anomalyType = ref<string>();
-const result = ref<StatisticsResult>();
-const loading = ref(false);
-const showTable = computed(
-  () =>
-    Boolean(result.value?.items) &&
-    (view.value !== 'anomalies' || Boolean(anomalyType.value)),
-);
+const schoolKeyword = ref('');
+const view = ref<StatisticView>(isTeacher ? 'anomalies' : 'overview');
+const switcherOptions = isTeacher
+  ? viewOptions.filter((option) => option.value === 'anomalies')
+  : viewOptions;
+const overview = ref<OverviewResult>();
+
+// 仅异常名单分页，其余视图一次返回全量。
+function pagerOf(current: StatisticView) {
+  return current === 'anomalies' ? { pageSize: 20 } : { enabled: false };
+}
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: useGridFormSchema(view.value, showSchoolFilter, schoolKeyword),
+    submitOnChange: true,
+  },
   gridOptions: {
-    columns: [],
+    columns: useColumns(view.value),
     height: 'auto',
-    pagerConfig: { pageSize: 20 },
+    pagerConfig: pagerOf(view.value),
     proxyConfig: {
       ajax: {
-        query: async ({ page }) => {
-          if (view.value !== 'pending-approvals' && !academicTermId.value) {
+        query: async ({ page }, formValues) => {
+          const current = view.value;
+          const values = formValues ?? {};
+          // 必填条件缺失时不发请求：概览/项目/对比/异常需学期，总分分布需学期或学年。
+          if (
+            current !== 'pending-approvals' &&
+            current !== 'total-scores' &&
+            !values.academic_term_id
+          ) {
             return { items: [], total: 0 };
           }
-          const params: Record<string, unknown> =
-            view.value === 'pending-approvals'
-              ? {}
-              : {
-                  academic_term_id: academicTermId.value,
-                  ...(grade.value ? { grade: grade.value } : {}),
-                  ...(gender.value ? { gender: gender.value } : {}),
-                };
-          if (view.value === 'anomalies' && anomalyType.value) {
-            params.type = anomalyType.value;
-            params.page = page.currentPage;
-            params.per_page = page.pageSize;
+          if (
+            current === 'total-scores' &&
+            !values.academic_term_id &&
+            !values.academic_year_id
+          ) {
+            return { items: [], total: 0 };
           }
-          loading.value = true;
-          try {
-            const response = await getStatistics(view.value, params);
-            result.value = response;
-            const items = response.items ?? [];
-            gridApi.setGridOptions({ columns: useItemColumns(items) });
-            return {
-              items: items.map((row, index) => ({
-                ...row,
-                __row_id: String(
-                  row.id ?? row.exam_item_code ?? row.type ?? index,
-                ),
-              })),
-              total: response.meta?.total ?? items.length,
-            };
-          } finally {
-            loading.value = false;
+          const params = { ...values };
+          if (params.academic_term_id) {
+            params.academic_term_id = String(params.academic_term_id);
+          }
+          switch (current) {
+            case 'anomalies': {
+              // 待锁定不接受 status；未选类型时只返回各类型数量，清单为空。
+              if (!params.type || params.type === 'pending_lock') {
+                delete params.status;
+              }
+              const response = await getStatistics<AnomaliesResult>(
+                'anomalies',
+                { ...params, page: page.currentPage, per_page: page.pageSize },
+              );
+              const rows = response.items ?? [];
+              // 未选类型时响应只有各类型数量（total 为数量合计），清单为空、分页总数取 0。
+              return {
+                items: rows.map((row, index) => ({
+                  ...row,
+                  __row_id: String(
+                    row.attempt_id ?? row.term_score?.id ?? index,
+                  ),
+                })),
+                total: response.meta?.total ?? rows.length,
+              };
+            }
+            case 'comparisons': {
+              const response = await getStatistics<ComparisonsResult>(
+                'comparisons',
+                params,
+              );
+              // 地区汇总并入同一表格，以层级列区分。
+              const rows = [
+                ...response.items.map((row) => ({
+                  ...row,
+                  __row_id: `school-${row.school?.id}`,
+                  kind: 'school',
+                  name: row.school?.name ?? '—',
+                })),
+                ...(response.districts ?? []).map((row) => ({
+                  ...row,
+                  __row_id: `district-${row.district?.id}`,
+                  kind: 'district',
+                  name: row.district?.name ?? '—',
+                })),
+              ];
+              return { items: rows, total: rows.length };
+            }
+            case 'items': {
+              const response = await getStatistics<ItemsResult>(
+                'items',
+                params,
+              );
+              const rows = response.items ?? [];
+              return {
+                items: rows.map((row) => ({
+                  ...row,
+                  __row_id: row.item.exam_item_code,
+                })),
+                total: response.total ?? rows.length,
+              };
+            }
+            case 'overview': {
+              overview.value = await getStatistics<OverviewResult>(
+                'overview',
+                params,
+              );
+              return { items: [], total: 0 };
+            }
+            case 'pending-approvals': {
+              const response = await getStatistics<PendingApprovalsResult>(
+                'pending-approvals',
+                {},
+              );
+              const rows = response.items ?? [];
+              return {
+                items: rows.map((row) => ({
+                  ...row,
+                  __row_id: `${row.workflow_type}-${row.status}`,
+                })),
+                total: rows.length,
+              };
+            }
+            case 'total-scores': {
+              const response = await getStatistics<TotalScoresResult>(
+                'total-scores',
+                params,
+              );
+              const rows = response.distribution?.bands ?? [];
+              return {
+                items: rows.map((row) => ({ ...row, __row_id: row.key })),
+                total: rows.length,
+              };
+            }
           }
         },
       },
     },
     rowConfig: { keyField: '__row_id' },
-    toolbarConfig: { refresh: false },
-  } as VxeTableGridOptions<Record<string, unknown>>,
-});
-const [FilterForm, formApi] = useVbenForm({
-  layout: 'vertical',
-  schema: useFilterSchema(view.value, isTeacher.value, onFilterChange),
-  showDefaultActions: false,
+    toolbarConfig: { refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions,
 });
 
-function onFilterChange(field: string, value: unknown) {
-  switch (field) {
-    case 'academic_term_id': {
-      academicTermId.value = String(value ?? '');
-
-      break;
-    }
-    case 'anomaly_type': {
-      anomalyType.value = value ? String(value) : undefined;
-
-      break;
-    }
-    case 'gender': {
-      gender.value = value ? String(value) : undefined;
-
-      break;
-    }
-    case 'grade': {
-      grade.value = value === undefined ? undefined : Number(value);
-
-      break;
-    }
-    case 'view': {
-      view.value = String(value);
-      result.value = undefined;
-      formApi.setState({
-        schema: useFilterSchema(view.value, isTeacher.value, onFilterChange),
-      });
-
-      break;
-    }
-    // No default
-  }
+// 进入页面或切换视图时默认选中当前学期：以今天落在学期起止日期内判定。
+async function applyCurrentTerm() {
+  if (view.value === 'pending-approvals') return;
+  const { items } = await getAcademicTermList();
+  const now = new Date();
+  const today = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
+  const current = items.find(
+    (term) =>
+      term.starts_on &&
+      term.ends_on &&
+      term.starts_on <= today &&
+      today <= term.ends_on,
+  );
+  if (current)
+    await gridApi.formApi.setValues({ academic_term_id: current.id });
 }
 
-function load() {
-  if (view.value !== 'pending-approvals' && !academicTermId.value) return;
-  gridApi.reload();
+async function onViewChange(value: StatisticView) {
+  view.value = value;
+  overview.value = undefined;
+  gridApi.setGridOptions({
+    columns: useColumns(value),
+    pagerConfig: pagerOf(value),
+  });
+  gridApi.formApi.setState({
+    schema: useGridFormSchema(value, showSchoolFilter, schoolKeyword),
+  });
+  await gridApi.formApi.resetForm();
+  await applyCurrentTerm();
+  await gridApi.query();
 }
 
-function display(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'object' && !Array.isArray(value) && 'name' in value) {
-    return String(value.name);
-  }
-  if (typeof value === 'object') return JSON.stringify(value);
-  return String(value);
-}
+onMounted(applyCurrentTerm);
 </script>
 
 <template>
-  <Page
-    title="授权统计"
-    description="按学生当前学校与班级计算；比率保留后端固定口径和分母。"
-  >
-    <!-- eslint-disable vue/html-closing-bracket-newline -->
-    <Card class="mb-4">
-      <div class="flex flex-wrap items-end gap-3">
-        <FilterForm />
-        <Button type="primary" :loading="loading" @click="load">查询</Button>
-      </div>
-    </Card>
-
-    <template v-if="result">
-      <Alert
-        class="mb-4"
-        type="info"
-        :message="`统计口径 ${result.caliber_version} · 生成时间 ${
-          result.generated_at
-        }`"
-      />
-      <template v-if="view === 'overview'">
-        <div class="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Card>
-            <Statistic title="学生数" :value="result.students ?? 0" />
-          </Card>
-          <Card>
-            <Statistic
-              title="有应测项学生"
-              :value="result.expected_students ?? 0"
-            />
-          </Card>
-          <Card>
-            <Statistic
-              title="参与率"
-              :value="result.participation?.rate ?? '—'"
-            /><small
-              >{{ result.participation?.count }} /
-              {{ result.participation?.denominator }}</small
-            >
-          </Card>
-          <Card>
-            <Statistic
-              title="完成率"
-              :value="result.completion?.rate ?? '—'"
-            /><small
-              >{{ result.completion?.count }} /
-              {{ result.completion?.denominator }}</small
-            >
-          </Card>
-          <Card>
-            <Statistic
-              title="缺测率"
-              :value="result.missing?.rate ?? '—'"
-            /><small
-              >{{ result.missing?.count }} /
-              {{ result.missing?.denominator }}</small
-            >
-          </Card>
-        </div>
-        <Alert
-          v-if="result.unavailable_indicators?.length"
-          type="warning"
-          message="合格率和优秀率的阈值尚未确认，平台不提供默认值。"
+  <Page auto-content-height>
+    <div class="flex h-full flex-col">
+      <div class="mb-4">
+        <Segmented
+          :value="view"
+          :options="switcherOptions"
+          @change="(value) => onViewChange(value as StatisticView)"
         />
-      </template>
-      <template v-else-if="view === 'anomalies'">
-        <div class="mb-4 flex flex-wrap gap-2">
-          <Tag v-for="count in result.counts" :key="count.type">
-            {{ count.label }}：{{ count.count }}
-          </Tag>
-        </div>
-      </template>
-      <template v-else-if="view === 'total-scores' || view === 'items'">
-        <Card v-if="result.distribution" class="mb-4">
-          计入 {{ result.distribution.denominator }} 条 · 无法归一化
-          {{ result.distribution.unbanded_count }} 条
-          <div class="mt-3 flex flex-wrap gap-2">
-            <Tag
-              v-for="band in result.distribution.bands"
-              :key="String(band.key)"
-            >
-              {{ display(band.label) }}：{{ display(band.count) }}
-            </Tag>
-          </div>
+      </div>
+      <div
+        v-if="view === 'overview'"
+        class="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5"
+      >
+        <Card>
+          <Statistic title="学生数" :value="overview?.students ?? 0" />
         </Card>
-      </template>
-      <Card v-else-if="view === 'pending-approvals'" class="mb-4">
-        申请 {{ result.case_total }} 件，明细 {{ result.item_total }} 条
-      </Card>
-      <Card v-if="result.districts?.length" title="地区汇总" class="mt-4">
-        <pre class="whitespace-pre-wrap text-sm">{{
-          JSON.stringify(result.districts, null, 2)
-        }}</pre>
-      </Card>
-    </template>
-    <Grid v-show="showTable" />
+        <Card>
+          <Statistic
+            title="有应测项学生"
+            :value="overview?.expected_students ?? 0"
+          />
+        </Card>
+        <Card>
+          <Statistic
+            title="参与率"
+            :value="formatRate(overview?.participation?.rate)"
+          />
+          <small>
+            {{ overview?.participation?.count ?? 0 }} /
+            {{ overview?.participation?.denominator ?? 0 }}
+          </small>
+        </Card>
+        <Card>
+          <Statistic
+            title="完成率"
+            :value="formatRate(overview?.completion?.rate)"
+          />
+          <small>
+            {{ overview?.completion?.count ?? 0 }} /
+            {{ overview?.completion?.denominator ?? 0 }}
+          </small>
+        </Card>
+        <Card>
+          <Statistic
+            title="缺测率"
+            :value="formatRate(overview?.missing?.rate)"
+          />
+          <small>
+            {{ overview?.missing?.count ?? 0 }} /
+            {{ overview?.missing?.denominator ?? 0 }}
+          </small>
+        </Card>
+      </div>
+      <div class="min-h-0 flex-1">
+        <Grid v-show="view !== 'overview'" />
+      </div>
+    </div>
   </Page>
 </template>
