@@ -31,17 +31,21 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       rules: isEdit ? undefined : 'required',
     },
     {
-      component: 'Select',
+      component: 'RadioGroup',
       fieldName: 'gender',
       label: '性别',
-      componentProps: { options: genderOptions, allowClear: true },
+      componentProps: { options: genderOptions, optionType: 'radio' },
       rules: isEdit ? undefined : 'required',
     },
     {
-      component: 'Input',
+      component: 'DatePicker',
       fieldName: 'birth_date',
       label: '出生日期',
-      componentProps: { type: 'date' },
+      componentProps: {
+        class: 'w-full',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+      },
     },
   );
   if (!isEdit)
@@ -55,7 +59,15 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'ApiSelect',
       fieldName: 'school_class_id',
       label: '班级',
-      componentProps: { api: getSchoolClassOptions, allowClear: true },
+      componentProps: {
+        allowClear: true,
+        api: getSchoolClassOptions,
+        class: 'w-full',
+        filterOption: (inputValue: string, option: { label: string }) =>
+          option.label.includes(inputValue),
+        placeholder: '请选择班级',
+        showSearch: true,
+      },
     });
   if (!isEdit)
     schema.push({
@@ -69,7 +81,11 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
       component: 'Select',
       fieldName: 'status',
       label: '状态',
-      componentProps: { options: statusOptions, allowClear: true },
+      componentProps: {
+        options: statusOptions,
+        allowClear: true,
+        class: 'w-full',
+      },
     });
   return schema;
 }
