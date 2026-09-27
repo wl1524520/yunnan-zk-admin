@@ -1,5 +1,5 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { VxeTableGridColumns } from '#/adapter/vxe-table';
+import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { Binding, Device } from '#/api/business/device';
 
 import { getSchoolTeacherList } from '#/api/business/school-teacher';
@@ -26,7 +26,9 @@ export function useBindingSchema(): VbenFormSchema[] {
   ];
 }
 
-export function useColumns(): VxeTableGridColumns<Device> {
+export function useColumns(
+  onActionClick: OnActionClickFn<Device>,
+): VxeTableGridColumns<Device> {
   return [
     { field: 'device_no', title: '设备编号' },
     { field: 'vendor', title: '厂商' },
@@ -35,10 +37,15 @@ export function useColumns(): VxeTableGridColumns<Device> {
     { field: 'status', title: '状态', slots: { default: 'status' } },
     { field: 'teachers', title: '绑定教师', slots: { default: 'teachers' } },
     {
-      field: 'action',
+      field: 'operation',
       title: '操作',
-      slots: { default: 'action' },
       width: 120,
+      fixed: 'right',
+      cellRender: {
+        name: 'CellOperation',
+        attrs: { onClick: onActionClick },
+        options: [{ code: 'binding', text: '教师绑定' }],
+      },
     },
   ];
 }

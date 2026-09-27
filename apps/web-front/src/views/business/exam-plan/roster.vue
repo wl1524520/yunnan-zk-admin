@@ -42,11 +42,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 </script>
 
 <template>
-  <Page
-    title="应考名单"
-    description="名单与应测项目根据学生当前归属和已确认选项实时生成。"
-    auto-content-height
-  >
+  <Page auto-content-height>
     <Grid>
       <template #toolbar-tools>
         <Space>

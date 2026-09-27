@@ -1,24 +1,24 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { ExamPlan } from '#/api/business/exam-plan';
 
-import { computed, reactive, ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
 
-import { Button, Input, message, Modal, Space, Tag } from 'antdv-next';
+import { Button, message, Modal, Tag } from 'antdv-next';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  getExamPlanList,
-  runExamPlanAction,
-  updateExamPlanDeadline,
-} from '#/api/business/exam-plan';
+import { getExamPlanList, runExamPlanAction } from '#/api/business/exam-plan';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
+import Postpone from './modules/postpone.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -29,18 +29,18 @@ const isBureau = computed(
     ) ?? false,
 );
 const districtId = computed(() => userStore.userInfo?.district?.id);
-const deadlineOpen = ref(false);
-const deadlinePlan = ref<ExamPlan>();
-const saving = ref(false);
-const deadline = reactive({ ends_at: '', reason: '' });
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
   destroyOnClose: true,
 });
+const [PostponeDrawer, postponeDrawerApi] = useVbenDrawer({
+  connectedComponent: Postpone,
+  destroyOnClose: true,
+});
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
-    columns: useColumns(),
+    columns: useColumns(onActionClick, canOperate),
     height: 'auto',
     pagerConfig: { pageSize: 20 },
     proxyConfig: {
@@ -49,7 +49,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id' },
-    toolbarConfig: { refresh: true, zoom: true },
+    toolbarConfig: { custom: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<ExamPlan>,
 });
 
@@ -76,42 +76,19 @@ function runAction(plan: ExamPlan, action: 'cancel' | 'close' | 'publish') {
   });
 }
 
-function openDeadline(plan: ExamPlan) {
-  deadlinePlan.value = plan;
-  deadline.ends_at = '';
-  deadline.reason = '';
-  deadlineOpen.value = true;
-}
-
-async function updateDeadline() {
-  if (!deadlinePlan.value || !deadline.ends_at || !deadline.reason) {
-    message.error('请填写新的结束时间和原因');
-    return;
-  }
-  saving.value = true;
-  try {
-    await updateExamPlanDeadline(
-      deadlinePlan.value.id,
-      new Date(deadline.ends_at).toISOString(),
-      deadline.reason,
-    );
-    message.success('截止时间已更新');
-    deadlineOpen.value = false;
-    gridApi.query();
-  } finally {
-    saving.value = false;
-  }
+function onActionClick({ code, row }: OnActionClickParams<ExamPlan>) {
+  if (code === 'roster') router.push(`/exam-plans/${row.id}/roster`);
+  if (code === 'publish') runAction(row, 'publish');
+  if (code === 'postpone') postponeDrawerApi.setData(row).open();
+  if (code === 'close') runAction(row, 'close');
+  if (code === 'cancel') runAction(row, 'cancel');
 }
 </script>
 
 <template>
-  <Page
-    title="考试计划"
-    description="教体局创建和发布计划；学校与教师查看本校已发布计划及应考名单。"
-    auto-content-height
-  >
-    <!-- eslint-disable vue/html-closing-bracket-newline -->
+  <Page auto-content-height>
     <FormDrawer @success="gridApi.query()" />
+    <PostponeDrawer @success="gridApi.query()" />
     <Grid>
       <template #toolbar-tools>
         <Button v-if="isBureau" type="primary" @click="formDrawerApi.open()">
@@ -132,66 +109,6 @@ async function updateDeadline() {
           {{ row.status }}
         </Tag>
       </template>
-      <template #actions="{ row }">
-        <Space>
-          <Button
-            type="link"
-            size="small"
-            @click="router.push(`/exam-plans/${row.id}/roster`)"
-          >
-            名单
-          </Button>
-          <template v-if="canOperate(row)">
-            <Button
-              v-if="row.status === 'draft'"
-              type="link"
-              size="small"
-              @click="runAction(row, 'publish')"
-            >
-              发布
-            </Button>
-            <Button
-              v-if="row.status === 'published'"
-              type="link"
-              size="small"
-              @click="openDeadline(row)"
-            >
-              延期
-            </Button>
-            <Button
-              v-if="row.status === 'published'"
-              type="link"
-              size="small"
-              @click="runAction(row, 'close')"
-            >
-              关闭
-            </Button>
-            <Button
-              v-if="row.status === 'draft'"
-              danger
-              type="link"
-              size="small"
-              @click="runAction(row, 'cancel')"
-            >
-              取消
-            </Button>
-          </template>
-        </Space>
-      </template>
     </Grid>
-    <Modal
-      v-model:open="deadlineOpen"
-      title="调整截止时间"
-      :confirm-loading="saving"
-      @ok="updateDeadline"
-    >
-      <div class="grid gap-4">
-        <label
-          >新的截止时间
-          <Input v-model:value="deadline.ends_at" type="datetime-local"
-        /></label>
-        <label>调整原因 <Input v-model:value="deadline.reason" /></label>
-      </div>
-    </Modal>
   </Page>
 </template>

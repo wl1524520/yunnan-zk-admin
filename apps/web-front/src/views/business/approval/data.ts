@@ -1,5 +1,5 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { VxeTableGridColumns } from '#/adapter/vxe-table';
+import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { ApprovalCase } from '#/api/business/approval';
 
 export const workflowOptions = [
@@ -18,44 +18,41 @@ export const statusOptions = [
   'closed',
 ].map((value) => ({ label: value, value }));
 
-export function useFilterSchema(
-  onChange: (filters: Record<string, unknown>) => void,
-): VbenFormSchema[] {
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Select',
-      componentProps: {
-        allowClear: true,
-        onChange: (value: unknown) => onChange({ workflow_type: value }),
-        options: workflowOptions,
-      },
+      componentProps: { allowClear: true, options: workflowOptions },
       fieldName: 'workflow_type',
       label: '审批流程',
     },
     {
       component: 'Select',
-      componentProps: {
-        allowClear: true,
-        onChange: (value: unknown) => onChange({ status: value }),
-        options: statusOptions,
-      },
+      componentProps: { allowClear: true, options: statusOptions },
       fieldName: 'status',
       label: '办理状态',
     },
   ];
 }
 
-export function useColumns(): VxeTableGridColumns<ApprovalCase> {
+export function useColumns(
+  onActionClick: OnActionClickFn<ApprovalCase>,
+): VxeTableGridColumns<ApprovalCase> {
   return [
     { field: 'case_no', title: '申请编号' },
     { field: 'school', title: '学校', slots: { default: 'school' } },
     { field: 'case_type', title: '类型' },
     { field: 'status', title: '状态', slots: { default: 'status' } },
     {
-      field: 'action',
+      field: 'operation',
       title: '操作',
-      slots: { default: 'action' },
       width: 130,
+      fixed: 'right',
+      cellRender: {
+        name: 'CellOperation',
+        attrs: { onClick: onActionClick },
+        options: [{ code: 'detail', text: '查看办理' }],
+      },
     },
   ];
 }

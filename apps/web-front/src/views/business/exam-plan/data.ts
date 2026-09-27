@@ -1,7 +1,7 @@
 import type { Ref } from 'vue';
 
 import type { VbenFormSchema } from '#/adapter/form';
-import type { VxeTableGridColumns } from '#/adapter/vxe-table';
+import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { ExamPlan } from '#/api/business/exam-plan';
 
 import { getAcademicTermOptions } from '#/api/business/academic-term';
@@ -72,7 +72,33 @@ export function useFormSchema(schoolKeyword: Ref<string>): VbenFormSchema[] {
   ];
 }
 
-export function useColumns(): VxeTableGridColumns<ExamPlan> {
+export function usePostponeSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'DatePicker',
+      componentProps: {
+        class: 'w-full',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        showTime: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'ends_at',
+      label: '新的截止时间',
+      rules: 'required',
+    },
+    {
+      component: 'Input',
+      fieldName: 'reason',
+      label: '调整原因',
+      rules: 'required',
+    },
+  ];
+}
+
+export function useColumns(
+  onActionClick: OnActionClickFn<ExamPlan>,
+  canOperate: (plan: ExamPlan) => boolean,
+): VxeTableGridColumns<ExamPlan> {
   return [
     { field: 'name', title: '计划名称' },
     { field: 'term', title: '学期', slots: { default: 'term' } },
@@ -81,10 +107,40 @@ export function useColumns(): VxeTableGridColumns<ExamPlan> {
     { field: 'ends_at', title: '结束时间', slots: { default: 'ends_at' } },
     { field: 'status', title: '状态', slots: { default: 'status' } },
     {
-      field: 'actions',
+      field: 'operation',
       title: '操作',
-      slots: { default: 'actions' },
-      width: 310,
+      width: 190,
+      fixed: 'right',
+      cellRender: {
+        name: 'CellOperation',
+        attrs: { onClick: onActionClick },
+        options: [
+          { code: 'roster', text: '名单' },
+          {
+            code: 'publish',
+            text: '发布',
+            show: (row: ExamPlan) => canOperate(row) && row.status === 'draft',
+          },
+          {
+            code: 'postpone',
+            text: '延期',
+            show: (row: ExamPlan) =>
+              canOperate(row) && row.status === 'published',
+          },
+          {
+            code: 'close',
+            text: '关闭',
+            show: (row: ExamPlan) =>
+              canOperate(row) && row.status === 'published',
+          },
+          {
+            code: 'cancel',
+            text: '取消',
+            danger: true,
+            show: (row: ExamPlan) => canOperate(row) && row.status === 'draft',
+          },
+        ],
+      },
     },
   ];
 }
