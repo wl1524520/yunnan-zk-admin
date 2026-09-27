@@ -12,10 +12,16 @@ export interface ImportBatch {
   created_at: string;
 }
 
+export interface ImportRowError {
+  code: string;
+  field: string;
+  message: string;
+}
+
 export interface ImportRow {
   row_no: number;
   validation_status: string;
-  errors: unknown;
+  errors: ImportRowError[] | null;
   data: Record<string, unknown>;
   regulation_package?: { code: string; name: string };
 }
@@ -27,7 +33,7 @@ export function getImportList(page: number, perPage = 20) {
 }
 
 export function uploadImport(data: FormData) {
-  return requestClient.post('/imports', data, {
+  return requestClient.post<ImportBatch>('/imports', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 }
@@ -36,12 +42,21 @@ export function getImportBatch(id: string) {
   return requestClient.get<ImportBatch>(`/imports/${id}`);
 }
 
-export function getImportRows(id: string, page: number, perPage = 20) {
+export function getImportRows(
+  id: string,
+  page: number,
+  perPage = 20,
+  validationStatus?: string,
+) {
   return requestClient.get<PageResult<ImportRow>>(`/imports/${id}/rows`, {
-    params: { page, per_page: perPage },
+    params: {
+      page,
+      per_page: perPage,
+      ...(validationStatus ? { validation_status: validationStatus } : {}),
+    },
   });
 }
 
 export function runImportAction(id: string, kind: 'commit' | 'validate') {
-  return requestClient.post(`/imports/${id}/${kind}`);
+  return requestClient.post<ImportBatch>(`/imports/${id}/${kind}`);
 }

@@ -19,6 +19,7 @@ import { getStudentList } from '#/api/business/student';
 import { useColumns, useGridFormSchema } from './data';
 import Detail from './modules/detail.vue';
 import Form from './modules/form.vue';
+import StudentImport from './modules/import.vue';
 
 const canWrite = useUserStore().userInfo?.roles?.includes('school') ?? false;
 const lookupLabels = reactive<Record<string, string>>({});
@@ -28,6 +29,10 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
 });
 const [DetailDrawer, detailDrawerApi] = useVbenDrawer({
   connectedComponent: Detail,
+  destroyOnClose: true,
+});
+const [ImportDrawer, importDrawerApi] = useVbenDrawer({
+  connectedComponent: StudentImport,
   destroyOnClose: true,
 });
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -67,10 +72,15 @@ onMounted(async () => {
   <Page auto-content-height>
     <FormDrawer @success="gridApi.query()" />
     <DetailDrawer @success="gridApi.query()" />
+    <ImportDrawer @success="gridApi.query()" />
     <Grid table-title="学生档案">
       <template #toolbar-tools>
+        <Button v-if="canWrite" type="primary" @click="importDrawerApi.open()">
+          导入
+        </Button>
         <Button
           v-if="canWrite"
+          class="ml-2"
           type="primary"
           @click="formDrawerApi.setData({}).open()"
         >
