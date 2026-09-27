@@ -69,7 +69,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id' },
-    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
+    toolbarConfig: { custom: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<Student>,
 });
 
