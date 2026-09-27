@@ -106,9 +106,12 @@ export function useGridFormSchema(canWrite: boolean): VbenFormSchema[] {
 export function useColumns(
   onActionClick: OnActionClickFn<Student>,
   canWrite = true,
+  canConfirm = false,
   lookupLabels: Record<string, string> = {},
 ): VxeTableGridColumns<Student> {
   return [
+    // 多选列：供批量"选测确认"使用，教师与学校可见。
+    { align: 'left', type: 'checkbox', visible: canConfirm, width: 60 },
     { field: 'student_no', title: '学籍号' },
     { field: 'name', title: '姓名／名称' },
     {

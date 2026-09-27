@@ -20,15 +20,3 @@ export function createStudent(data: Record<string, unknown>) {
 export function updateStudent(id: string, data: Record<string, unknown>) {
   return requestClient.request(`/students/${id}`, { data, method: 'PATCH' });
 }
-
-export async function getStudentOptions(name = '') {
-  const result = await getStudentList({
-    page: 1,
-    per_page: 100,
-    ...(name ? { name } : {}),
-  });
-  return result.items.map((item) => ({
-    label: [item.student_no, item.name].filter(Boolean).join(' '),
-    value: item.id,
-  }));
-}

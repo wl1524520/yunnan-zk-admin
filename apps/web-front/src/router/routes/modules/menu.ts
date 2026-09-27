@@ -50,17 +50,6 @@ const routes: RouteRecordRaw[] = [
     path: '/school-teachers',
   },
   {
-    component: () => import('#/views/business/selection/list.vue'),
-    meta: {
-      authority: ['school', 'teacher'],
-      icon: 'lucide:list-checks',
-      order: 14,
-      title: '选测确认',
-    },
-    name: 'Selections',
-    path: '/selections',
-  },
-  {
     component: () => import('#/views/business/approval/list.vue'),
     meta: {
       authority: ['province', 'city', 'county', 'school'],
