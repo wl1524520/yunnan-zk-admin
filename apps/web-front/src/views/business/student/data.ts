@@ -90,17 +90,60 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   return schema;
 }
 
-export function useGridFormSchema(canWrite: boolean): VbenFormSchema[] {
-  return canWrite
-    ? [
-        {
-          component: 'ApiSelect',
-          fieldName: 'school_class_id',
-          label: '班级',
-          componentProps: { allowClear: true, api: getSchoolClassOptions },
-        },
-      ]
-    : [];
+/**
+ * 生成「届别」选项：按当前学年起算最近 4 届。
+ * 学年以 9 月为界：当前月份 ≥ 9 时上限为当年，否则为当年 - 1。
+ */
+function getEnrollmentYearOptions() {
+  const now = new Date();
+  const latest =
+    now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return Array.from({ length: 4 }, (_, index) => {
+    const year = latest - index;
+    return { label: `${year}级`, value: year };
+  });
+}
+
+// 搜索字段对学校与教师角色统一开放，不再按角色区分。
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Select',
+      fieldName: 'enrollment_year',
+      label: '届别',
+      componentProps: { allowClear: true, options: getEnrollmentYearOptions() },
+    },
+    {
+      component: 'Select',
+      fieldName: 'grade',
+      label: '年级',
+      componentProps: {
+        allowClear: true,
+        options: [7, 8, 9].map((value) => ({
+          label: `${value} 年级`,
+          value,
+        })),
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'name',
+      label: '姓名',
+      componentProps: { allowClear: true },
+    },
+    {
+      component: 'Input',
+      fieldName: 'student_no',
+      label: '学籍号',
+      componentProps: { allowClear: true },
+    },
+    {
+      component: 'ApiSelect',
+      fieldName: 'school_class_id',
+      label: '班级',
+      componentProps: { allowClear: true, api: getSchoolClassOptions },
+    },
+  ];
 }
 
 export function useColumns(

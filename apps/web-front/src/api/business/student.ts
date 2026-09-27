@@ -6,6 +6,12 @@ export interface Student {
   id: string;
   student_no?: string;
   name?: string;
+  gender?: string;
+  school_class_id?: string;
+  /** 最新学年下的年级；未建档年级资料时为 null。 */
+  grade?: null | number;
+  /** 适用的体测规则包编码。 */
+  regulation_package_code?: string;
   [key: string]: unknown;
 }
 

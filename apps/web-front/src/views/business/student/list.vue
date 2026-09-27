@@ -48,7 +48,7 @@ const [SelectionDrawer, selectionDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 const [Grid, gridApi] = useVbenVxeGrid({
-  formOptions: { schema: useGridFormSchema(canWrite), submitOnChange: true },
+  formOptions: { schema: useGridFormSchema(), submitOnChange: true },
   gridEvents: {
     checkboxAll: onCheckboxChange,
     checkboxChange: onCheckboxChange,
@@ -97,8 +97,20 @@ function openSelectionDrawer() {
     message.warning('请先选择学生');
     return;
   }
-  if (new Set(records.map((row) => String(row.school_class_id ?? ''))).size > 1) {
-    message.warning('请选择同一班级的学生');
+  // 同口径校验：所选学生须为同年级、同性别且适用同一规则包，才允许批量确认选测。
+  if (records.some((row) => row.grade === null || row.grade === undefined)) {
+    message.warning('所选学生中存在未建档年级资料的学生，无法确认选测');
+    return;
+  }
+  const criteria = new Set(
+    records.map((row) =>
+      [row.grade, row.gender, row.regulation_package_code]
+        .map((value) => String(value ?? ''))
+        .join('|'),
+    ),
+  );
+  if (criteria.size > 1) {
+    message.warning('请选择同年级、同性别的学生');
     return;
   }
   selectionDrawerApi.setData({ students: records }).open();
