@@ -9,6 +9,7 @@ export const overridesPreferences = defineOverridesPreferences({
   app: {
     accessMode: 'frontend',
     authPageLayout: 'panel-center',
+    defaultAvatar: 'https://cdn.uniteyun.com/tizhi/logo_200X200.png',
     defaultHomePath: '/home',
     enablePreferences: false,
     enableRefreshToken: false,
@@ -21,6 +22,10 @@ export const overridesPreferences = defineOverridesPreferences({
   },
   theme: {
     mode: 'light',
+  },
+  logo: {
+    enable: true,
+    source: 'https://cdn.uniteyun.com/tizhi/logo_200X200.png',
   },
   widget: {
     globalSearch: false,
