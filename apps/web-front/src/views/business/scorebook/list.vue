@@ -1,106 +1,130 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { ScoreRow } from '#/api/business/scorebook';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
+import { useUserStore } from '@vben/stores';
 
-import { Alert, Card, Tag } from 'antdv-next';
+import { Tag, Tooltip } from 'antdv-next';
 
-import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { getAcademicTermList } from '#/api/business/academic-term';
 import { getScorebook } from '#/api/business/scorebook';
 
 import Detail from '../student/modules/detail.vue';
-import { useColumns, useFilterSchema } from './data';
+import { resolveItemBadges, useColumns, useGridFormSchema } from './data';
 
-const academicTermId = ref('');
-const caliber = ref('');
-const generatedAt = ref('');
+const roles = useUserStore().userInfo?.roles ?? [];
+const showSchoolFilter = roles.some((role) =>
+  ['city', 'county', 'province'].includes(role),
+);
+const schoolKeyword = ref('');
+
 const [DetailDrawer, detailDrawerApi] = useVbenDrawer({
   connectedComponent: Detail,
   destroyOnClose: true,
 });
+
+function onActionClick({ code, row }: OnActionClickParams<ScoreRow>) {
+  if (code === 'detail') detailDrawerApi.setData(row.student).open();
+}
+
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: useGridFormSchema(showSchoolFilter, schoolKeyword),
+    submitOnChange: true,
+  },
   gridOptions: {
-    columns: useColumns(),
+    columns: useColumns(onActionClick),
     height: 'auto',
     pagerConfig: { pageSize: 20 },
     proxyConfig: {
       ajax: {
-        query: async ({ page }) => {
-          if (!academicTermId.value) return { items: [], total: 0 };
-          const response = await getScorebook(
-            academicTermId.value,
-            page.currentPage,
-            page.pageSize,
-          );
-          caliber.value = response.caliber_version || '';
-          generatedAt.value = response.generated_at || '';
-          return {
-            ...response,
-            items: response.items.map((row) => ({
-              ...row,
-              id: row.student.id,
-            })),
-          };
+        query: async ({ page }, formValues) => {
+          // 未选择学期时不发请求
+          if (!formValues?.academic_term_id) {
+            return { items: [], total: 0 };
+          }
+          return await getScorebook({
+            ...formValues,
+            academic_term_id: String(formValues?.academic_term_id),
+            page: page.currentPage,
+            per_page: page.pageSize,
+          });
         },
       },
     },
-    rowConfig: { keyField: 'id' },
-    toolbarConfig: { refresh: true, zoom: true },
-  } as VxeTableGridOptions<ScoreRow & { id: string }>,
+    rowConfig: { keyField: 'student.id' },
+    toolbarConfig: { refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<ScoreRow>,
 });
-const [FilterForm] = useVbenForm({
-  layout: 'vertical',
-  schema: useFilterSchema((id) => {
-    academicTermId.value = id;
-    gridApi.query();
-  }),
-  showDefaultActions: false,
+
+// 进入页面默认选中当前学期：以今天落在学期起止日期内判定，找不到则由用户手选。
+onMounted(async () => {
+  const { items } = await getAcademicTermList();
+  const now = new Date();
+  const today = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
+  const current = items.find(
+    (term) =>
+      term.starts_on &&
+      term.ends_on &&
+      term.starts_on <= today &&
+      today <= term.ends_on,
+  );
+  if (current)
+    await gridApi.formApi.setValues({ academic_term_id: current.id });
 });
 </script>
 
 <template>
-  <Page
-    title="班级成绩册"
-    description="分数未形成时保持空值；档案和成绩按学生当前学校、班级归属。"
-    auto-content-height
-  >
+  <Page auto-content-height>
     <DetailDrawer @success="gridApi.query()" />
-    <Card class="mb-4"><FilterForm /></Card>
-    <Alert
-      v-if="caliber"
-      class="mb-4"
-      type="info"
-      :message="`口径：${caliber} · 查询时间：${generatedAt}`"
-    />
     <Grid>
-      <template #student_no="{ row }">{{ row.student.student_no }}</template>
-      <template #name="{ row }">{{ row.student.name }}</template>
-      <template #school="{ row }">{{ row.school?.name || '—' }}</template>
-      <template #class="{ row }">{{ row.school_class?.name || '—' }}</template>
-      <template #completion="{ row }">
-        {{ row.completed_item_count }} / {{ row.expected_item_count }}
-        <Tag>{{ row.status }}</Tag>
+      <template #term_score="{ row }">
+        <Tooltip v-if="!row.term_score" title="尚有项目未完成，成绩未生成">
+          <span>—</span>
+        </Tooltip>
+        <template v-else>
+          <span :class="{ 'opacity-60': row.term_score.status === 'draft' }">
+            {{ row.term_score.score }}
+          </span>
+          <Tag v-if="row.term_score.status === 'draft'" class="ml-1">
+            未锁定
+          </Tag>
+        </template>
       </template>
-      <template #term="{ row }">{{ row.term_score?.score ?? '—' }}</template>
       <template #grade_score="{ row }">
-        {{ row.grade_score?.score ?? '—' }}
+        <Tooltip v-if="!row.grade_score" title="尚有项目未完成，成绩未生成">
+          <span>—</span>
+        </Tooltip>
+        <span v-else>{{ row.grade_score.score }}</span>
       </template>
-      <template #total="{ row }">{{ row.total_score?.score ?? '—' }}</template>
-      <template #action="{ row }">
-        <a @click="detailDrawerApi.setData(row.student).open()">查看档案</a>
+      <template #total_score="{ row }">
+        <Tooltip v-if="!row.total_score" title="尚有项目未完成，成绩未生成">
+          <span>—</span>
+        </Tooltip>
+        <span v-else>{{ row.total_score.score }}</span>
       </template>
       <template #items="{ row }">
-        <div class="flex flex-wrap gap-2">
-          <Tag v-for="item in row.items" :key="item.exam_item_code">
-            {{ item.item_name }}：{{
-              item.score ?? (item.completed ? '已完成' : '待测')
-            }}
-          </Tag>
+        <div v-if="row.items.length > 0" class="flex flex-wrap gap-2">
+          <Tooltip
+            v-for="badge in resolveItemBadges(row.items)"
+            :key="badge.key"
+            :title="badge.tip"
+          >
+            <Tag :color="badge.color">{{ badge.label }}</Tag>
+          </Tooltip>
         </div>
+        <span v-else>暂无考试项目</span>
       </template>
     </Grid>
   </Page>

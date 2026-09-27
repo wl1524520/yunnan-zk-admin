@@ -7,6 +7,8 @@ export interface AcademicTerm {
   term_no: number;
   academic_year_id: string;
   academic_year?: { code: string; id: string };
+  starts_on?: null | string;
+  ends_on?: null | string;
 }
 
 export function getAcademicTermList() {
