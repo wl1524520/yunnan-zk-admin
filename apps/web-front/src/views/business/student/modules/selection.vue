@@ -1,8 +1,5 @@
 <script lang="ts" setup>
-import type {
-  ConfirmedSelection,
-  ItemOptions,
-} from '#/api/business/selection';
+import type { ConfirmedSelection, ItemOptions } from '#/api/business/selection';
 import type { Student } from '#/api/business/student';
 
 import { computed, reactive, ref } from 'vue';
@@ -51,7 +48,9 @@ const submitCount = computed(() =>
     : students.value.length - excluded.value.length,
 );
 const title = computed(() =>
-  submitCount.value > 1 ? `选测确认（${submitCount.value} 名学生）` : '选测确认',
+  submitCount.value > 1
+    ? `选测确认（${submitCount.value} 名学生）`
+    : '选测确认',
 );
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -133,8 +132,7 @@ async function loadContent() {
 
 function resetSelections() {
   for (const key of Object.keys(selectedCodes)) delete selectedCodes[key];
-  for (const key of Object.keys(selectedVariants))
-    delete selectedVariants[key];
+  for (const key of Object.keys(selectedVariants)) delete selectedVariants[key];
   reason.value = '';
   offlineSyncConfirmed.value = false;
 }
