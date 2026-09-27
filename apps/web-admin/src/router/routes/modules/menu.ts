@@ -43,12 +43,6 @@ const routes: RouteRecordRaw[] = [
     path: '/admin-users',
   },
   {
-    component: () => import('#/views/business/import/list.vue'),
-    meta: { icon: 'lucide:file-up', order: 15, title: '批量导入' },
-    name: 'Imports',
-    path: '/imports',
-  },
-  {
     component: () => import('#/views/business/device/list.vue'),
     meta: { icon: 'lucide:tablet-smartphone', order: 16, title: '设备台账' },
     name: 'Devices',
