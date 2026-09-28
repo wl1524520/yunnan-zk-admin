@@ -53,6 +53,7 @@ export function resolveItemBadges(items: ScoreItem[]): ItemBadge[] {
 
 export function useGridFormSchema(
   showSchoolFilter: boolean,
+  showClassFilter: boolean,
   schoolKeyword: Ref<string>,
 ): VbenFormSchema[] {
   const schema: VbenFormSchema[] = [
@@ -93,14 +94,8 @@ export function useGridFormSchema(
       fieldName: 'grade',
       label: '年级',
     },
-    {
-      component: 'ApiSelect',
-      componentProps: { allowClear: true, api: getSchoolClassOptions },
-      fieldName: 'school_class_id',
-      label: '班级',
-    },
   ];
-  // 省/市/县角色可跨校查看，追加学校筛选；学校与教师的数据范围已由后端锁定本校。
+  // 局端只筛学校；班级列表接口仅授权学校账号读取本校班级。
   if (showSchoolFilter) {
     schema.push({
       component: 'ApiSelect',
@@ -117,6 +112,13 @@ export function useGridFormSchema(
       }),
       fieldName: 'school_id',
       label: '学校',
+    });
+  } else if (showClassFilter) {
+    schema.push({
+      component: 'ApiSelect',
+      componentProps: { allowClear: true, api: getSchoolClassOptions },
+      fieldName: 'school_class_id',
+      label: '班级',
     });
   }
   return schema;

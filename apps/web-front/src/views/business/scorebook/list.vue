@@ -6,6 +6,7 @@ import type {
 import type { ScoreRow } from '#/api/business/scorebook';
 
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
@@ -20,10 +21,16 @@ import Detail from '../student/modules/detail.vue';
 import { resolveItemBadges, useColumns, useGridFormSchema } from './data';
 
 const roles = useUserStore().userInfo?.roles ?? [];
+const route = useRoute();
 const showSchoolFilter = roles.some((role) =>
   ['city', 'county', 'province'].includes(role),
 );
-const schoolKeyword = ref('');
+const showClassFilter = roles.includes('school');
+const schoolKeyword = ref(
+  typeof route.query.school_keyword === 'string'
+    ? route.query.school_keyword
+    : '',
+);
 
 const [DetailDrawer, detailDrawerApi] = useVbenDrawer({
   connectedComponent: Detail,
@@ -36,7 +43,7 @@ function onActionClick({ code, row }: OnActionClickParams<ScoreRow>) {
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
-    schema: useGridFormSchema(showSchoolFilter, schoolKeyword),
+    schema: useGridFormSchema(showSchoolFilter, showClassFilter, schoolKeyword),
     submitOnChange: true,
   },
   gridOptions: {
@@ -64,8 +71,29 @@ const [Grid, gridApi] = useVbenVxeGrid({
   } as VxeTableGridOptions<ScoreRow>,
 });
 
-// 进入页面默认选中当前学期：以今天落在学期起止日期内判定，找不到则由用户手选。
+// 从概览进入时保留共同的筛选条件；直接进入时仍默认当前学期。
 onMounted(async () => {
+  const query = route.query;
+  if (typeof query.academic_term_id === 'string') {
+    const values: Record<string, number | string> = {
+      academic_term_id: query.academic_term_id,
+    };
+    if (
+      typeof query.grade === 'string' &&
+      ['7', '8', '9'].includes(query.grade)
+    ) {
+      values.grade = Number(query.grade);
+    }
+    if (showSchoolFilter && typeof query.school_id === 'string') {
+      values.school_id = query.school_id;
+    }
+    if (showClassFilter && typeof query.school_class_id === 'string') {
+      values.school_class_id = query.school_class_id;
+    }
+    await gridApi.formApi.setValues(values);
+    return;
+  }
+
   const { items } = await getAcademicTermList();
   const now = new Date();
   const today = [
