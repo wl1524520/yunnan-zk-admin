@@ -4,7 +4,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { ScoreItem, ScoreRow } from '#/api/business/scorebook';
 
-import { getAcademicTermOptions } from '#/api/business/academic-term';
+import { getAcademicTermList } from '#/api/business/academic-term';
 import { getSchoolOptions } from '#/api/business/school';
 import { getSchoolClassOptions } from '#/api/business/school-class';
 
@@ -13,6 +13,23 @@ const statusOptions = [
   { color: 'orange', label: '部分完成', value: 'partial' },
   { color: 'green', label: '已完成', value: 'completed' },
 ];
+
+async function getScorebookTermOptions() {
+  const { items } = await getAcademicTermList();
+  return items
+    .toSorted((a, b) => {
+      const yearOrder = (b.academic_year?.code ?? '').localeCompare(
+        a.academic_year?.code ?? '',
+      );
+      return yearOrder || b.term_no - a.term_no;
+    })
+    .map((term) => ({
+      label: [term.academic_year?.code ?? '', `第 ${term.term_no} 学期`]
+        .filter(Boolean)
+        .join(' '),
+      value: term.id,
+    }));
+}
 
 /** 展开行项目徽标，按特殊处置、结果状态与分数依次判定。 */
 export interface ItemBadge {
@@ -59,7 +76,7 @@ export function useGridFormSchema(
     {
       component: 'ApiSelect',
       componentProps: {
-        api: getAcademicTermOptions,
+        api: getScorebookTermOptions,
         filterOption: (inputValue: string, option: { label: string }) =>
           option.label.includes(inputValue),
         placeholder: '请选择学期',
