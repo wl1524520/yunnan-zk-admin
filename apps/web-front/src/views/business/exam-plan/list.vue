@@ -53,12 +53,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
   } as VxeTableGridOptions<ExamPlan>,
 });
 
-function formatDate(value: string) {
-  return value
-    ? new Date(value).toLocaleString('zh-CN', { hour12: false })
-    : '—';
-}
-
 function canOperate(plan: ExamPlan) {
   return isBureau.value && plan.publisher_district_id === districtId.value;
 }
@@ -102,8 +96,6 @@ function onActionClick({ code, row }: OnActionClickParams<ExamPlan>) {
       <template #schools="{ row }">
         {{ row.schools?.map((school) => school.name).join('、') || '—' }}
       </template>
-      <template #starts_at="{ row }">{{ formatDate(row.starts_at) }}</template>
-      <template #ends_at="{ row }">{{ formatDate(row.ends_at) }}</template>
       <template #status="{ row }">
         <Tag :color="row.status === 'published' ? 'green' : 'default'">
           {{ row.status }}

@@ -125,8 +125,6 @@ export function useColumns(): VxeTableGridColumns {
     },
     {
       field: 'tested_at',
-      formatter: ({ cellValue }) =>
-        cellValue ? String(cellValue).slice(0, 16).replace('T', ' ') : '—',
       title: '测试时间',
       width: 150,
     },

@@ -103,8 +103,8 @@ export function useColumns(
     { field: 'name', title: '计划名称' },
     { field: 'term', title: '学期', slots: { default: 'term' } },
     { field: 'schools', title: '学校', slots: { default: 'schools' } },
-    { field: 'starts_at', title: '开始时间', slots: { default: 'starts_at' } },
-    { field: 'ends_at', title: '结束时间', slots: { default: 'ends_at' } },
+    { field: 'starts_at', title: '开始时间' },
+    { field: 'ends_at', title: '结束时间' },
     { field: 'status', title: '状态', slots: { default: 'status' } },
     {
       field: 'operation',

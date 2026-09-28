@@ -36,7 +36,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       await updateExamPlanDeadline(
         plan.value.id,
-        new Date(String(values.ends_at)).toISOString(),
+        String(values.ends_at),
         String(values.reason),
       );
       message.success('截止时间已更新');

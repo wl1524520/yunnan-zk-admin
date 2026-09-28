@@ -42,8 +42,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
         academic_term_id: String(values.academic_term_id),
         school_ids: schoolIds,
         name: String(values.name),
-        starts_at: new Date(String(values.starts_at)).toISOString(),
-        ends_at: new Date(String(values.ends_at)).toISOString(),
+        starts_at: String(values.starts_at),
+        ends_at: String(values.ends_at),
         request_id: crypto.randomUUID(),
       });
       message.success('计划已创建');
