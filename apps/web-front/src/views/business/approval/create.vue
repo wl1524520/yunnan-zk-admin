@@ -509,6 +509,8 @@ onMounted(() => {
           >申报分值<InputNumber
             v-model:value="form.score"
             :min="0"
+            :precision="1"
+            :step="0.1"
             class="w-full"
         /></label>
         <Checkbox v-model:checked="form.is_team_event">集体项目</Checkbox>
