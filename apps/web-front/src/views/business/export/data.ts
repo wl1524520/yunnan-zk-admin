@@ -18,6 +18,7 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       component: 'Select',
       componentProps: {
+        class: 'w-full',
         options: [
           { label: '班级成绩册', value: 'scorebook' },
           { label: '统计汇总', value: 'statistics' },
@@ -30,7 +31,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'ApiSelect',
-      componentProps: { api: getAcademicTermOptions },
+      componentProps: { api: getAcademicTermOptions, class: 'w-full' },
       fieldName: 'academic_term_id',
       label: '学期',
       rules: 'required',

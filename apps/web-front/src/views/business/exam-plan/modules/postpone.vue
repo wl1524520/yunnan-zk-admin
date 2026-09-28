@@ -55,7 +55,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer class="w-full max-w-[520px]" title="调整截止时间">
+  <Drawer class="w-full max-w-[800px]" title="调整截止时间">
     <Form class="mx-4" :layout="isHorizontal ? 'horizontal' : 'vertical'" />
   </Drawer>
 </template>
