@@ -5,7 +5,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 
 import {
   getAcademicTermList,
-  getAcademicTermOptions,
+  getAcademicTermOptionsNewestFirst,
 } from '#/api/business/academic-term';
 import { getSchoolOptions } from '#/api/business/school';
 
@@ -78,7 +78,7 @@ export function termField(required = true): VbenFormSchema {
     component: 'ApiSelect',
     componentProps: {
       allowClear: !required,
-      api: getAcademicTermOptions,
+      api: getAcademicTermOptionsNewestFirst,
       filterOption: (inputValue: string, option: { label: string }) =>
         option.label.includes(inputValue),
       placeholder: '请选择学期',
