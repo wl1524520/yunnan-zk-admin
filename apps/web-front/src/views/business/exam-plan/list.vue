@@ -6,7 +6,6 @@ import type {
 import type { ExamPlan } from '#/api/business/exam-plan';
 
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
@@ -19,8 +18,8 @@ import { getExamPlanList, runExamPlanAction } from '#/api/business/exam-plan';
 import { useColumns } from './data';
 import Form from './modules/form.vue';
 import Postpone from './modules/postpone.vue';
+import Roster from './roster.vue';
 
-const router = useRouter();
 const userStore = useUserStore();
 const isBureau = computed(
   () =>
@@ -38,6 +37,16 @@ const [PostponeDrawer, postponeDrawerApi] = useVbenDrawer({
   connectedComponent: Postpone,
   destroyOnClose: true,
 });
+const [RosterDrawer, rosterDrawerApi] = useVbenDrawer({
+  connectedComponent: Roster,
+  destroyOnClose: true,
+});
+const planStatuses: Record<string, { color: string; label: string }> = {
+  draft: { color: 'default', label: '草稿' },
+  published: { color: 'green', label: '已发布' },
+  closed: { color: 'gray', label: '已关闭' },
+  cancelled: { color: 'red', label: '已取消' },
+};
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     columns: useColumns(onActionClick, canOperate),
@@ -71,7 +80,7 @@ function runAction(plan: ExamPlan, action: 'cancel' | 'close' | 'publish') {
 }
 
 function onActionClick({ code, row }: OnActionClickParams<ExamPlan>) {
-  if (code === 'roster') router.push(`/exam-plans/${row.id}/roster`);
+  if (code === 'roster') rosterDrawerApi.setData(row).open();
   if (code === 'publish') runAction(row, 'publish');
   if (code === 'postpone') postponeDrawerApi.setData(row).open();
   if (code === 'close') runAction(row, 'close');
@@ -83,6 +92,7 @@ function onActionClick({ code, row }: OnActionClickParams<ExamPlan>) {
   <Page auto-content-height>
     <FormDrawer @success="gridApi.query()" />
     <PostponeDrawer @success="gridApi.query()" />
+    <RosterDrawer />
     <Grid>
       <template #toolbar-tools>
         <Button v-if="isBureau" type="primary" @click="formDrawerApi.open()">
@@ -97,8 +107,8 @@ function onActionClick({ code, row }: OnActionClickParams<ExamPlan>) {
         {{ row.schools?.map((school) => school.name).join('、') || '—' }}
       </template>
       <template #status="{ row }">
-        <Tag :color="row.status === 'published' ? 'green' : 'default'">
-          {{ row.status }}
+        <Tag :color="planStatuses[row.status]?.color ?? 'default'">
+          {{ planStatuses[row.status]?.label ?? row.status }}
         </Tag>
       </template>
     </Grid>

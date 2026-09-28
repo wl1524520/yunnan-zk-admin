@@ -19,12 +19,6 @@ const routes: RouteRecordRaw[] = [
     path: '/exam-plans',
   },
   {
-    component: () => import('#/views/business/exam-plan/roster.vue'),
-    meta: { hideInMenu: true, title: '应考名单' },
-    name: 'PlanRoster',
-    path: '/exam-plans/:id/roster',
-  },
-  {
     component: () => import('#/views/business/student/list.vue'),
     meta: { icon: 'lucide:graduation-cap', order: 11, title: '学生档案' },
     name: 'Students',
