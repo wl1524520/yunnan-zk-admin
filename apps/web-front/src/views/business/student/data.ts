@@ -4,14 +4,14 @@ import type { Student } from '#/api/business/student';
 
 import { getSchoolClassOptions } from '#/api/business/school-class';
 
-const genderOptions = [
+export const genderOptions = [
   { label: '男', value: 'male' },
   { label: '女', value: 'female' },
 ];
-const statusOptions = [
-  { label: '在籍', value: 'active' },
-  { label: '毕业', value: 'graduated' },
-  { label: '退学', value: 'withdrawn' },
+export const statusOptions = [
+  { color: 'green', label: '在籍', value: 'active' },
+  { color: 'blue', label: '毕业', value: 'graduated' },
+  { color: 'red', label: '退学', value: 'withdrawn' },
 ];
 
 export function useFormSchema(isEdit: boolean): VbenFormSchema[] {

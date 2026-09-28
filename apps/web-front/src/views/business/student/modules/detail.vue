@@ -37,7 +37,16 @@ import {
   voidStudentAttempt,
 } from '#/api/business/student-detail';
 
+import { genderOptions, statusOptions } from '../data';
 import {
+  formatEnumColor,
+  formatEnumLabel,
+  gradeStatusOptions,
+  movementTypeOptions,
+  processStatusOptions,
+  resultStatusOptions,
+  scoringStatusOptions,
+  termStatusOptions,
   useAttemptColumns,
   useMovementColumns,
   useMovementSchema,
@@ -275,12 +284,17 @@ function lockTerm(row: TermResult) {
 </script>
 
 <template>
-  <Drawer class="w-full max-w-[1080px]" :title="title">
+  <Drawer class="w-full md:w-[80%]" :title="title">
     <div class="flex flex-col gap-4">
       <Card v-if="student">
         <div class="grid gap-3 text-sm md:grid-cols-3">
-          <div>性别：{{ student.gender === 'male' ? '男' : '女' }}</div>
-          <div>在籍状态：{{ student.status }}</div>
+          <div>性别：{{ formatEnumLabel(student.gender, genderOptions) }}</div>
+          <div>
+            在籍状态：
+            <Tag :color="formatEnumColor(student.status, statusOptions)">
+              {{ formatEnumLabel(student.status, statusOptions) }}
+            </Tag>
+          </div>
           <div>规则版本：{{ student.regulation_package_code }}</div>
           <div>当前学校：{{ student.school?.name || '—' }}</div>
           <div>当前班级：{{ student.school_class?.name || '—' }}</div>
@@ -305,6 +319,13 @@ function lockTerm(row: TermResult) {
           </Button>
         </template>
         <MovementGrid>
+          <template #movement_type="{ row }">
+            <Tag
+              :color="formatEnumColor(row.movement_type, movementTypeOptions)"
+            >
+              {{ formatEnumLabel(row.movement_type, movementTypeOptions) }}
+            </Tag>
+          </template>
           <template #from="{ row }">
             {{ row.from_school_class?.name || '—' }}
           </template>
@@ -317,8 +338,26 @@ function lockTerm(row: TermResult) {
       <Card title="测试记录">
         <AttemptGrid>
           <template #item="{ row }">{{ row.item?.name || '—' }}</template>
+          <template #result_status="{ row }">
+            <Tag
+              :color="formatEnumColor(row.result_status, resultStatusOptions)"
+            >
+              {{ formatEnumLabel(row.result_status, resultStatusOptions) }}
+            </Tag>
+          </template>
+          <template #scoring_status="{ row }">
+            <Tag
+              :color="formatEnumColor(row.scoring_status, scoringStatusOptions)"
+            >
+              {{ formatEnumLabel(row.scoring_status, scoringStatusOptions) }}
+            </Tag>
+          </template>
           <template #process_status="{ row }">
-            <Tag>{{ row.process_status }}</Tag>
+            <Tag
+              :color="formatEnumColor(row.process_status, processStatusOptions)"
+            >
+              {{ formatEnumLabel(row.process_status, processStatusOptions) }}
+            </Tag>
           </template>
           <template #tested_school="{ row }">
             {{ row.tested_school?.name || '—' }}
@@ -345,7 +384,9 @@ function lockTerm(row: TermResult) {
             第 {{ row.academic_term?.term_no }} 学期
           </template>
           <template #term_status="{ row }">
-            <Tag>{{ row.status }}</Tag>
+            <Tag :color="formatEnumColor(row.status, termStatusOptions)">
+              {{ formatEnumLabel(row.status, termStatusOptions) }}
+            </Tag>
           </template>
           <template #revision="{ row }">
             {{ row.calculated_revision }} / {{ row.source_revision }}
@@ -364,9 +405,15 @@ function lockTerm(row: TermResult) {
 
       <Card title="年级与总分">
         <Space wrap>
-          <Tag v-for="result in gradeResults" :key="result.id">
+          <Tag
+            v-for="result in gradeResults"
+            :key="result.id"
+            :color="formatEnumColor(result.status, gradeStatusOptions)"
+          >
             {{ result.academic_year?.code }} · {{ result.grade }} 年级：
-            {{ result.grade_score ?? '待形成' }}（{{ result.status }}）
+            {{ result.grade_score ?? '待形成' }}（{{
+              formatEnumLabel(result.status, gradeStatusOptions)
+            }}）
           </Tag>
         </Space>
         <p class="mt-3">总分：{{ totalResult?.total_score ?? '待形成' }}</p>

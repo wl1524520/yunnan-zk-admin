@@ -11,6 +11,55 @@ import type {
 
 import { getSchoolClassOptions } from '#/api/business/school-class';
 
+export const movementTypeOptions = [
+  { color: 'blue', label: '初次分班', value: 'class_assignment' },
+  { color: 'cyan', label: '同校转班', value: 'class_change' },
+  { color: 'purple', label: '转学', value: 'school_transfer' },
+];
+
+export const resultStatusOptions = [
+  { color: 'green', label: '有效', value: 'valid' },
+  { color: 'red', label: '犯规', value: 'foul' },
+  { color: 'orange', label: '缺考', value: 'absent' },
+];
+
+export const scoringStatusOptions = [
+  { color: 'orange', label: '待评分', value: 'pending' },
+  { color: 'green', label: '已评分', value: 'scored' },
+  { color: 'red', label: '缺基线', value: 'missing_baseline' },
+  { color: 'default', label: '不适用', value: 'not_applicable' },
+];
+
+export const processStatusOptions = [
+  { color: 'blue', label: '已接收', value: 'received' },
+  { color: 'green', label: '已评定', value: 'evaluated' },
+  { color: 'red', label: '已作废', value: 'voided' },
+];
+
+export const termStatusOptions = [
+  { color: 'orange', label: '草稿', value: 'draft' },
+  { color: 'green', label: '已锁定', value: 'locked' },
+];
+
+export const gradeStatusOptions = [
+  { color: 'orange', label: '草稿', value: 'draft' },
+  { color: 'green', label: '正式', value: 'final' },
+];
+
+export function formatEnumLabel(
+  value: unknown,
+  options: readonly { label: string; value: string }[],
+): string {
+  return options.find((option) => option.value === value)?.label ?? '未知状态';
+}
+
+export function formatEnumColor(
+  value: unknown,
+  options: readonly { color: string; value: string }[],
+): string {
+  return options.find((option) => option.value === value)?.color ?? 'default';
+}
+
 export function useProfileSchema(
   yearOptions: Ref<{ label: string; value: string }[]>,
 ): VbenFormSchema[] {
@@ -75,7 +124,11 @@ export function useProfileColumns(): VxeTableGridColumns<GradeProfile> {
 
 export function useMovementColumns(): VxeTableGridColumns<Movement> {
   return [
-    { field: 'movement_type', title: '类型' },
+    {
+      field: 'movement_type',
+      title: '类型',
+      slots: { default: 'movement_type' },
+    },
     { field: 'from', title: '原班级', slots: { default: 'from' } },
     { field: 'to', title: '新班级', slots: { default: 'to' } },
     { field: 'moved_at', title: '时间' },
@@ -87,8 +140,16 @@ export function useAttemptColumns(): VxeTableGridColumns<Attempt> {
   return [
     { field: 'source_record_no', title: '记录号' },
     { field: 'item', title: '项目', slots: { default: 'item' } },
-    { field: 'result_status', title: '认定' },
-    { field: 'scoring_status', title: '评分' },
+    {
+      field: 'result_status',
+      title: '认定',
+      slots: { default: 'result_status' },
+    },
+    {
+      field: 'scoring_status',
+      title: '评分',
+      slots: { default: 'scoring_status' },
+    },
     {
       field: 'process_status',
       title: '处理',
