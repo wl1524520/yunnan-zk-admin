@@ -3,8 +3,8 @@ import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { Manager } from '#/api/business/manager';
 
 import {
-  getActiveDistrictOptions,
-  getDistrictOptions,
+  getActiveDistrictTree,
+  getDistrictTree,
 } from '#/api/business/district';
 import { getSchoolOptions } from '#/api/business/school';
 
@@ -59,17 +59,16 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
     });
   if (!isEdit)
     schema.push({
-      component: 'ApiSelect',
+      component: 'ApiTreeSelect',
       fieldName: 'district_id',
       label: '所属地区',
       componentProps: {
         allowClear: true,
-        api: getActiveDistrictOptions,
+        api: getActiveDistrictTree,
         class: 'w-full',
-        filterOption: (inputValue: string, option: { label: string }) =>
-          option.label.includes(inputValue),
         placeholder: '请选择地区',
         showSearch: true,
+        treeNodeFilterProp: 'label',
       },
     });
   if (!isEdit)
@@ -105,10 +104,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: { allowClear: true, options: roleOptions },
     },
     {
-      component: 'ApiSelect',
+      component: 'ApiTreeSelect',
       fieldName: 'district_id',
       label: '所属地区',
-      componentProps: { allowClear: true, api: getDistrictOptions },
+      componentProps: { allowClear: true, api: getDistrictTree },
     },
     {
       component: 'ApiSelect',

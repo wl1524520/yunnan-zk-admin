@@ -2,9 +2,9 @@ import JSONBigInt from 'json-bigint';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  getActiveDistrictOptions,
+  getActiveDistrictTree,
   getAllDistricts,
-  getDistrictOptions,
+  getDistrictTree,
 } from './district';
 
 const request = vi.hoisted(() => ({ get: vi.fn() }));
@@ -38,40 +38,60 @@ describe('getAllDistricts', () => {
   });
 });
 
-describe('getDistrictOptions', () => {
+describe('getDistrictTree', () => {
   beforeEach(() => request.get.mockReset());
 
-  it('uses district ids from every page as option values', async () => {
-    request.get
-      .mockResolvedValueOnce({
-        items: [{ id: '53', name: '云南省' }],
-        total: 101,
-      })
-      .mockResolvedValueOnce({
-        items: [{ id: '5301', name: '昆明市' }],
-        total: 101,
-      });
+  it('maps the recursive tree to label/value/children options', async () => {
+    request.get.mockResolvedValue({
+      data: [
+        {
+          children: [
+            {
+              children: [{ id: '530102', name: '五华区' }],
+              id: '5301',
+              name: '昆明市',
+            },
+            { children: [], id: '5303', name: '曲靖市' },
+          ],
+          id: '53',
+          name: '云南省',
+        },
+      ],
+    });
 
-    const options = await getDistrictOptions();
+    const tree = await getDistrictTree();
 
-    expect(options).toEqual([
-      { label: '53 云南省', value: '53' },
-      { label: '5301 昆明市', value: '5301' },
+    expect(request.get).toHaveBeenCalledWith('/districts/tree', undefined);
+    expect(tree).toEqual([
+      {
+        label: '云南省',
+        value: '53',
+        children: [
+          {
+            label: '昆明市',
+            value: '5301',
+            children: [{ label: '五华区', value: '530102' }],
+          },
+          { label: '曲靖市', value: '5303' },
+        ],
+      },
     ]);
   });
 });
 
-it('offers only active districts for new assignments', async () => {
-  request.get.mockReset();
-  request.get.mockResolvedValue({
-    items: [
-      { id: '53', name: '云南省', status: 'active' },
-      { id: '5301', name: '昆明市', status: 'inactive' },
-    ],
-    total: 2,
-  });
+describe('getActiveDistrictTree', () => {
+  beforeEach(() => request.get.mockReset());
 
-  expect(await getActiveDistrictOptions()).toEqual([
-    { label: '53 云南省', value: '53' },
-  ]);
+  it('requests only active districts', async () => {
+    request.get.mockResolvedValue({
+      data: [{ id: '53', name: '云南省' }],
+    });
+
+    const tree = await getActiveDistrictTree();
+
+    expect(request.get).toHaveBeenCalledWith('/districts/tree', {
+      params: { status: 'active' },
+    });
+    expect(tree).toEqual([{ label: '云南省', value: '53' }]);
+  });
 });

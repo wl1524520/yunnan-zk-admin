@@ -3,8 +3,8 @@ import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { School } from '#/api/business/school';
 
 import {
-  getActiveDistrictOptions,
-  getDistrictOptions,
+  getActiveDistrictTree,
+  getDistrictTree,
 } from '#/api/business/district';
 
 const schooltypeOptions = [
@@ -36,49 +36,46 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
   });
   if (!isEdit)
     schema.push({
-      component: 'ApiSelect',
+      component: 'ApiTreeSelect',
       fieldName: 'district_id',
       label: '所在地区',
       componentProps: {
         allowClear: true,
-        api: getActiveDistrictOptions,
+        api: getActiveDistrictTree,
         class: 'w-full',
-        filterOption: (inputValue: string, option: { label: string }) =>
-          option.label.includes(inputValue),
         placeholder: '请选择所在地区',
         showSearch: true,
+        treeNodeFilterProp: 'label',
       },
       rules: isEdit ? undefined : 'required',
     });
   if (!isEdit)
     schema.push({
-      component: 'ApiSelect',
+      component: 'ApiTreeSelect',
       fieldName: 'supervising_district_id',
       label: '主管地区',
       componentProps: {
         allowClear: true,
-        api: getActiveDistrictOptions,
+        api: getActiveDistrictTree,
         class: 'w-full',
-        filterOption: (inputValue: string, option: { label: string }) =>
-          option.label.includes(inputValue),
         placeholder: '请选择主管地区',
         showSearch: true,
+        treeNodeFilterProp: 'label',
       },
       rules: isEdit ? undefined : 'required',
     });
   schema.push(
     {
-      component: 'ApiSelect',
+      component: 'ApiTreeSelect',
       fieldName: 'filing_district_id',
       label: '备案地区',
       componentProps: {
         allowClear: true,
-        api: getActiveDistrictOptions,
+        api: getActiveDistrictTree,
         class: 'w-full',
-        filterOption: (inputValue: string, option: { label: string }) =>
-          option.label.includes(inputValue),
         placeholder: '请选择备案地区',
         showSearch: true,
+        treeNodeFilterProp: 'label',
       },
     },
     { component: 'Input', fieldName: 'address', label: '地址' },
@@ -105,10 +102,10 @@ export function useFormSchema(isEdit: boolean): VbenFormSchema[] {
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      component: 'ApiSelect',
+      component: 'ApiTreeSelect',
       fieldName: 'district_id',
       label: '所在地区',
-      componentProps: { allowClear: true, api: getDistrictOptions },
+      componentProps: { allowClear: true, api: getDistrictTree },
     },
     {
       component: 'Select',

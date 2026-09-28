@@ -41,21 +41,40 @@ export function updateDistrict(id: string, data: Record<string, unknown>) {
   return requestClient.request(`/districts/${id}`, { data, method: 'PATCH' });
 }
 
-async function districtOptions(activeOnly: boolean) {
-  const districts = await getAllDistricts();
-  const available = activeOnly
-    ? districts.filter((district) => district.status === 'active')
-    : districts;
-  return available.map((item) => ({
-    label: [item.id, item.name].filter(Boolean).join(' '),
-    value: item.id,
+export interface DistrictTreeNode {
+  children?: DistrictTreeNode[];
+  id: string;
+  name: string;
+}
+
+export interface DistrictTreeOption {
+  children?: DistrictTreeOption[];
+  label: string;
+  value: string;
+}
+
+function toTreeOptions(nodes: DistrictTreeNode[]): DistrictTreeOption[] {
+  return nodes.map((node) => ({
+    label: node.name,
+    value: node.id,
+    ...(node.children?.length
+      ? { children: toTreeOptions(node.children) }
+      : {}),
   }));
 }
 
-export function getDistrictOptions() {
-  return districtOptions(false);
+async function districtTree(activeOnly: boolean) {
+  const { data } = await requestClient.get<{ data: DistrictTreeNode[] }>(
+    '/districts/tree',
+    activeOnly ? { params: { status: 'active' } } : undefined,
+  );
+  return toTreeOptions(data);
 }
 
-export function getActiveDistrictOptions() {
-  return districtOptions(true);
+export function getDistrictTree() {
+  return districtTree(false);
+}
+
+export function getActiveDistrictTree() {
+  return districtTree(true);
 }
