@@ -1,26 +1,7 @@
 // cspell:ignore unbanded
-import type { Ref } from 'vue';
-
-import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 
-import {
-  bandTitles,
-  categoryLabels,
-  genderField,
-  gradeField,
-  schoolField,
-  termField,
-} from '../shared';
-
-export function useGridFormSchema(
-  showSchoolFilter: boolean,
-  schoolKeyword: Ref<string>,
-): VbenFormSchema[] {
-  const schema: VbenFormSchema[] = [termField(), gradeField(), genderField()];
-  if (showSchoolFilter) schema.push(schoolField(schoolKeyword));
-  return schema;
-}
+import { bandTitles, categoryLabels } from '../shared';
 
 export function useColumns(): VxeTableGridColumns {
   return [

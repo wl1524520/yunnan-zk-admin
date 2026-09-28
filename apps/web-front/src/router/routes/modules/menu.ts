@@ -91,11 +91,26 @@ const routes: RouteRecordRaw[] = [
         path: 'overview',
       },
       {
+        component: () => import('#/views/business/analysis/health/index.vue'),
+        meta: { authority: analysisRoles, title: '体质健康' },
+        name: 'AnalysisHealth',
+        path: 'health',
+      },
+      {
         component: () =>
           import('#/views/business/analysis/item-bands/index.vue'),
-        meta: { authority: analysisRoles, title: '项目分档' },
-        name: 'AnalysisItemBands',
-        path: 'item-bands',
+        meta: { authority: analysisRoles, title: '基础体能' },
+        name: 'AnalysisBasic',
+        path: 'basic',
+        props: { category: 'basic' },
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/item-bands/index.vue'),
+        meta: { authority: analysisRoles, title: '专项技能' },
+        name: 'AnalysisSkill',
+        path: 'skill',
+        props: { category: 'skill' },
       },
       {
         component: () =>

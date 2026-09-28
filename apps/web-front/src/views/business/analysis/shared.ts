@@ -54,7 +54,7 @@ const genderOptions = [
 ];
 
 export const categoryLabels: Record<string, string> = {
-  basic: '基础项目',
+  basic: '基础体能',
   health: '体质健康',
   skill: '专项技能',
 };

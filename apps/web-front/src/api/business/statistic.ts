@@ -4,6 +4,7 @@ import { requestClient } from '#/api/request';
 export type StatisticView =
   | 'anomalies'
   | 'comparisons'
+  | 'health'
   | 'items'
   | 'overview'
   | 'pending-approvals'
@@ -17,6 +18,7 @@ export interface StatisticsQuery {
   school_id?: string;
   school_class_id?: string;
   exam_item_code?: string;
+  category?: 'basic' | 'skill';
   type?: string;
   status?: string;
   workflow_type?: string;
@@ -88,6 +90,35 @@ export interface ItemsResult extends StatisticsBase {
   };
   items: ItemDistributionRow[];
   total: number;
+}
+
+export interface HealthMonitoringRow {
+  grade: number;
+  item: { exam_item_code: string; name: string };
+  students: number;
+  measured: number;
+  missing_current: number;
+  coverage_rate: null | string;
+  summary: null | {
+    max: string;
+    mean: string;
+    median: string;
+    min: string;
+    q1: string;
+    q3: string;
+  };
+  change: null | {
+    down: number;
+    missing_prior: number;
+    paired: number;
+    same: number;
+    up: number;
+  };
+}
+
+export interface HealthMonitoringResult extends StatisticsBase {
+  academic_year: { code: string; id: string };
+  items: HealthMonitoringRow[];
 }
 
 export interface TotalScoresResult extends StatisticsBase {
@@ -188,6 +219,7 @@ export interface PendingApprovalsResult extends StatisticsBase {
 export type StatisticsResult =
   | AnomaliesResult
   | ComparisonsResult
+  | HealthMonitoringResult
   | ItemsResult
   | OverviewResult
   | PendingApprovalsResult
