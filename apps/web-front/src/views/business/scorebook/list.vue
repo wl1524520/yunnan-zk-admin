@@ -115,16 +115,23 @@ onMounted(async () => {
         <span v-else>{{ row.total_score.score }}</span>
       </template>
       <template #items="{ row }">
-        <div v-if="row.items.length > 0" class="flex flex-wrap gap-2">
-          <Tooltip
-            v-for="badge in resolveItemBadges(row.items)"
-            :key="badge.key"
-            :title="badge.tip"
-          >
-            <Tag :color="badge.color">{{ badge.label }}</Tag>
-          </Tooltip>
+        <div class="min-h-28 px-6 py-5">
+          <div class="mb-3 text-sm font-medium">考试项目</div>
+          <div v-if="row.items.length > 0" class="flex flex-wrap gap-3">
+            <Tooltip
+              v-for="badge in resolveItemBadges(row.items)"
+              :key="badge.key"
+              :title="badge.tip"
+            >
+              <Tag :color="badge.color" class="m-0 px-3 py-1">
+                {{ badge.label }}
+              </Tag>
+            </Tooltip>
+          </div>
+          <span v-else class="text-muted-foreground text-sm">
+            暂无考试项目
+          </span>
         </div>
-        <span v-else>暂无考试项目</span>
       </template>
     </Grid>
   </Page>
