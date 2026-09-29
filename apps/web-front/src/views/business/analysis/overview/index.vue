@@ -16,6 +16,7 @@ import { getSchoolClassOptions } from '#/api/business/school-class';
 import { getStatistics } from '#/api/business/statistic';
 
 import { formatRate } from '../shared';
+import MetricDonut from './modules/metric-donut.vue';
 
 const router = useRouter();
 const roles = useUserStore().userInfo?.roles ?? [];
@@ -305,6 +306,20 @@ onMounted(() => {
                 {{ metric.count }} / {{ metric.denominator }}
               </small>
             </Card>
+          </div>
+          <div class="grid gap-4 pt-4 lg:grid-cols-2">
+            <MetricDonut
+              first-label="已参与"
+              :metric="overview.participation"
+              second-label="未参与"
+              title="参与情况 · 全部学生"
+            />
+            <MetricDonut
+              first-label="已完成"
+              :metric="overview.completion"
+              second-label="缺测"
+              title="完成情况 · 有应测项学生"
+            />
           </div>
           <div class="grid gap-2 pt-4">
             <Alert
