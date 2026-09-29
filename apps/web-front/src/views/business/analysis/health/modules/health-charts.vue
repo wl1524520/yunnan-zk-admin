@@ -11,7 +11,10 @@ import { Card } from 'antdv-next';
 
 import HealthBoxPlot from './health-boxplot.vue';
 
-const props = defineProps<{ rows: HealthMonitoringRow[] }>();
+const props = defineProps<{
+  indicatorName: string;
+  rows: HealthMonitoringRow[];
+}>();
 type ChangeRow = HealthMonitoringRow & {
   change: NonNullable<HealthMonitoringRow['change']>;
 };
@@ -19,12 +22,6 @@ type ChangeRow = HealthMonitoringRow & {
 const changeRef = ref<EchartsUIType>();
 const { renderEcharts: renderChange } = useEcharts(changeRef);
 
-const bmiRows = computed(() =>
-  props.rows.filter((row) => row.item.exam_item_code === '10024'),
-);
-const vitalRows = computed(() =>
-  props.rows.filter((row) => row.item.exam_item_code === '10025'),
-);
 const changeRows = computed(() =>
   props.rows.filter((row): row is ChangeRow => row.change !== null),
 );
@@ -55,7 +52,7 @@ function drawChanges() {
         const change = row?.change;
         if (!row || !change) return '';
         const element = document.createElement('div');
-        element.textContent = `${row.grade} 年级 · ${row.item.name}｜配对 ${change.paired} 人｜上升 ${change.up} 人｜持平 ${change.same} 人｜下降 ${change.down} 人｜缺上年值 ${change.missing_prior} 人`;
+        element.textContent = `${row.grade} 年级｜配对 ${change.paired} 人｜上升 ${change.up} 人｜持平 ${change.same} 人｜下降 ${change.down} 人｜缺上年值 ${change.missing_prior} 人`;
         return element;
       },
       trigger: 'axis',
@@ -69,7 +66,7 @@ function drawChanges() {
     yAxis: {
       data: changeRows.value.map(
         (row) =>
-          `${row.grade} 年级 · ${row.item.name}${row.change.paired === 0 ? ' · 无配对数据' : ''}`,
+          `${row.grade} 年级${row.change.paired === 0 ? ' · 无配对数据' : ''}`,
       ),
       inverse: true,
       type: 'category',
@@ -86,24 +83,16 @@ watch(() => props.rows, draw, { flush: 'post' });
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
-    <div class="grid gap-4 xl:grid-cols-2">
-      <Card title="BMI 年级分布">
-        <p class="mb-3 text-sm text-muted-foreground">
-          箱体为四分位区间，横线为中位数，橙点为均值。
-        </p>
-        <HealthBoxPlot :rows="bmiRows" title="各年级 BMI 箱线图及均值" />
-      </Card>
-      <Card title="肺活量体重指数年级分布">
-        <p class="mb-3 text-sm text-muted-foreground">
-          各年级为不同学生群体，不能解释为同一学生的变化。
-        </p>
-        <HealthBoxPlot
-          :rows="vitalRows"
-          title="各年级肺活量体重指数箱线图及均值"
-        />
-      </Card>
-    </div>
+  <div class="grid gap-4" :class="{ 'xl:grid-cols-2': changeRows.length > 0 }">
+    <Card :title="`${indicatorName} · 年级分布`">
+      <p class="mb-3 text-sm text-muted-foreground">
+        箱体为四分位区间，横线为中位数，橙点为均值；各年级为不同学生群体。
+      </p>
+      <HealthBoxPlot
+        :rows="rows"
+        :title="`各年级${indicatorName}箱线图及均值`"
+      />
+    </Card>
     <Card v-if="changeRows.length > 0" title="同一学生较上一年指数变化">
       <p class="mb-3 text-sm text-muted-foreground">
         每条以本年和上年都有有效指数的学生为
@@ -113,7 +102,7 @@ watch(() => props.rows, draw, { flush: 'post' });
         v-if="changeRows.some((row) => row.change?.paired)"
         ref="changeRef"
         :height="`${Math.max(300, changeRows.length * 62 + 85)}px`"
-        aria-label="八、九年级同人指数升降占比图"
+        :aria-label="`八、九年级${indicatorName}同人指数升降占比图`"
         role="img"
       />
       <div v-else class="py-12 text-center text-muted-foreground">

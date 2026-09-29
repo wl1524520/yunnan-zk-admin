@@ -184,14 +184,14 @@ onMounted(() => {
   >
     <div class="flex flex-col gap-4">
       <Card>
-        <div class="flex flex-wrap items-end gap-4">
-          <label class="grid min-w-56 gap-1">
+        <div class="flex flex-wrap items-center gap-4">
+          <label class="flex w-full items-center gap-2 sm:w-auto">
             <span>学期</span>
             <Select
               v-model:value="termId"
               :loading="loadingTerms"
               :options="termOptions"
-              class="w-full"
+              class="w-full min-w-0 sm:w-52"
               placeholder="请选择学期"
               show-search
               :filter-option="
@@ -199,24 +199,24 @@ onMounted(() => {
               "
             />
           </label>
-          <label class="grid min-w-32 gap-1">
+          <label class="flex w-full items-center gap-2 sm:w-auto">
             <span>年级</span>
             <Select
               v-model:value="grade"
               allow-clear
-              class="w-full"
+              class="w-full min-w-0 sm:w-28"
               :options="
                 [7, 8, 9].map((value) => ({ label: `${value} 年级`, value }))
               "
               placeholder="全部年级"
             />
           </label>
-          <label class="grid min-w-32 gap-1">
+          <label class="flex w-full items-center gap-2 sm:w-auto">
             <span>性别</span>
             <Select
               v-model:value="gender"
               allow-clear
-              class="w-full"
+              class="w-full min-w-0 sm:w-28"
               :options="[
                 { label: '男', value: 'male' },
                 { label: '女', value: 'female' },
@@ -224,12 +224,15 @@ onMounted(() => {
               placeholder="全部性别"
             />
           </label>
-          <label v-if="showSchoolFilter" class="grid min-w-56 gap-1">
+          <label
+            v-if="showSchoolFilter"
+            class="flex w-full items-center gap-2 sm:w-auto"
+          >
             <span>学校</span>
             <Select
               v-model:value="schoolId"
               allow-clear
-              class="w-full"
+              class="w-full min-w-0 sm:w-52"
               :filter-option="false"
               :options="schoolOptions"
               placeholder="搜索学校"
