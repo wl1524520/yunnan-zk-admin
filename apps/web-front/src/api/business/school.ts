@@ -21,3 +21,14 @@ export async function getSchoolOptions(keyword = '') {
     value: school.id,
   }));
 }
+
+export async function getComparisonSchoolOptions(keyword = '') {
+  const result = await requestClient.get<PageResult<School>>(
+    '/statistics/comparison-schools',
+    { params: { page: 1, per_page: 100, ...(keyword ? { keyword } : {}) } },
+  );
+  return result.items.map((school) => ({
+    label: `${school.code} ${school.name}`,
+    value: school.id,
+  }));
+}

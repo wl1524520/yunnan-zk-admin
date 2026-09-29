@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router';
 
 const schoolRoles = ['school'];
+const bureauRoles = ['province', 'city', 'county'];
 
 // 教师只能访问异常名单（其余分析视图后端 403）。
 const analysisRoles = ['province', 'city', 'county', 'school'];
@@ -121,10 +122,19 @@ const routes: RouteRecordRaw[] = [
       },
       {
         component: () =>
-          import('#/views/business/analysis/school-comparison/index.vue'),
-        meta: { authority: analysisRoles, title: '校际对比' },
+          import('#/views/business/analysis/comparison/index.vue'),
+        meta: { authority: bureauRoles, title: '校际对比' },
         name: 'AnalysisSchoolComparison',
         path: 'school-comparison',
+        props: { mode: 'school' },
+      },
+      {
+        component: () =>
+          import('#/views/business/analysis/comparison/index.vue'),
+        meta: { authority: schoolRoles, title: '班级对比' },
+        name: 'AnalysisClassComparison',
+        path: 'class-comparison',
+        props: { mode: 'class' },
       },
       {
         component: () =>

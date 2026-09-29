@@ -2,6 +2,7 @@ import { requestClient } from '#/api/request';
 
 export type StatisticView =
   | 'anomalies'
+  | 'class-comparisons'
   | 'comparisons'
   | 'health'
   | 'items'
@@ -15,6 +16,7 @@ export interface StatisticsQuery {
   grade?: number;
   gender?: string;
   school_id?: string;
+  school_ids?: string[];
   school_class_id?: string;
   exam_item_code?: string;
   category?: 'basic' | 'skill';
@@ -134,9 +136,11 @@ export interface TotalScoresResult extends StatisticsBase {
 
 export interface ComparisonRow {
   school?: { code: string; id: string; name: string };
+  school_class?: { code: string; id: string; name: string };
   district?: { id: string; level: string; name: string };
   students: number;
   expected_students: number;
+  participating_students: number;
   participation_rate: null | string;
   completion_rate: null | string;
   missing_rate: null | string;
@@ -148,6 +152,12 @@ export interface ComparisonsResult extends StatisticsBase {
   term: StatisticsTerm;
   items: ComparisonRow[];
   districts: ComparisonRow[];
+  total: number;
+}
+
+export interface ClassComparisonsResult extends StatisticsBase {
+  term: StatisticsTerm;
+  items: ComparisonRow[];
   total: number;
 }
 
@@ -214,6 +224,7 @@ export interface PendingApprovalsResult extends StatisticsBase {
 
 export type StatisticsResult =
   | AnomaliesResult
+  | ClassComparisonsResult
   | ComparisonsResult
   | HealthMonitoringResult
   | ItemsResult
