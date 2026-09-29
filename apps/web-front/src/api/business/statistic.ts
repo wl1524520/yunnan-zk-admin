@@ -1,4 +1,3 @@
-// cspell:ignore unbanded
 import { requestClient } from '#/api/request';
 
 export type StatisticView =
@@ -129,8 +128,7 @@ export interface TotalScoresResult extends StatisticsBase {
     denominator: number;
     excluded_statuses: string[];
     grade: null | number;
-    level: string;
-    unbanded_count: number;
+    level: 'grade' | 'grade_all';
   };
 }
 

@@ -1,4 +1,4 @@
-// cspell:ignore unbanded unscored
+// cspell:ignore unscored
 import type { Ref } from 'vue';
 
 import type { VbenFormSchema } from '#/adapter/form';
@@ -58,15 +58,6 @@ export const categoryLabels: Record<string, string> = {
   health: '体质健康',
   skill: '专项技能',
 };
-
-// 与后端 StatisticsCaliber::BANDS 同序的五档。
-export const bandTitles = [
-  '不足 20%',
-  '20%～40%',
-  '40%～60%',
-  '60%～80%',
-  '80%～100%',
-];
 
 export function formatRate(rate: null | string | undefined): string {
   if (rate === null || rate === undefined) return '—';

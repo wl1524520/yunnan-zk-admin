@@ -115,7 +115,7 @@ const routes: RouteRecordRaw[] = [
       {
         component: () =>
           import('#/views/business/analysis/score-distribution/index.vue'),
-        meta: { authority: analysisRoles, title: '总分分布' },
+        meta: { authority: analysisRoles, title: '年级成绩分布' },
         name: 'AnalysisScoreDistribution',
         path: 'score-distribution',
       },
