@@ -1,7 +1,13 @@
-// cspell:ignore unbanded
 import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 
-import { bandTitles, categoryLabels } from '../shared';
+import { categoryLabels } from '../shared';
+
+export const itemBandTitles = [
+  '不及格（<60%）',
+  '及格（60%～<80%）',
+  '良好（80%～<90%）',
+  '优秀（≥90%）',
+];
 
 export function useColumns(): VxeTableGridColumns {
   return [
@@ -19,8 +25,7 @@ export function useColumns(): VxeTableGridColumns {
       width: 110,
     },
     { field: 'calculated_count', title: '已计入', width: 90 },
-    { field: 'unbanded_count', title: '无法归一化', width: 110 },
-    ...bandTitles.map((title, index) => ({
+    ...itemBandTitles.map((title, index) => ({
       field: `band_${index}`,
       formatter: ({ row }: { row: { bands?: { count: number }[] } }) =>
         row.bands?.[index]?.count ?? 0,

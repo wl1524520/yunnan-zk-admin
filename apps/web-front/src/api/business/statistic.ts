@@ -74,7 +74,6 @@ export interface ItemDistributionRow {
   item: { category: string; exam_item_code: string; name: string };
   caps: Record<string, string>;
   calculated_count: number;
-  unbanded_count: number;
   bands: BandRow[];
 }
 
@@ -86,7 +85,6 @@ export interface ItemsResult extends StatisticsBase {
     denominator: number;
     excluded_statuses: string[];
     level: string;
-    unbanded_count: number;
   };
   items: ItemDistributionRow[];
   total: number;

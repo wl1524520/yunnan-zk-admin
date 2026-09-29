@@ -9,7 +9,8 @@ import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
 
 import { Button, Card, Select, Statistic, TabPane, Tabs } from 'antdv-next';
 
-import { bandTitles, categoryLabels } from '../../shared';
+import { categoryLabels } from '../../shared';
+import { itemBandTitles } from '../data';
 
 const props = defineProps<{
   rows: ItemDistributionRow[];
@@ -20,7 +21,7 @@ const emit = defineEmits<{
   'update:selectedItemCode': [value: string];
 }>();
 
-const bandColors = ['#f97316', '#fbbf24', '#60a5fa', '#22c55e', '#6366f1'];
+const bandColors = ['#ef4444', '#f59e0b', '#3b82f6', '#16a34a'];
 const activeTab = ref<'detail' | 'overview'>('overview');
 const overviewRef = ref<EchartsUIType>();
 const detailRef = ref<EchartsUIType>();
@@ -30,16 +31,8 @@ const { renderEcharts: renderDetail } = useEcharts(detailRef);
 const selectedRow = computed(() =>
   props.rows.find((row) => row.item.exam_item_code === props.selectedItemCode),
 );
-const selectedBandedCount = computed(() =>
-  selectedRow.value ? bandedCount(selectedRow.value) : 0,
-);
-const lowBandCount = computed(() => selectedRow.value?.bands[0]?.count ?? 0);
-const highBandCount = computed(() => selectedRow.value?.bands[4]?.count ?? 0);
-const lowBandShare = computed(() =>
-  share(lowBandCount.value, selectedBandedCount.value).toFixed(1),
-);
-const highBandShare = computed(() =>
-  share(highBandCount.value, selectedBandedCount.value).toFixed(1),
+const selectedCount = computed(() =>
+  selectedRow.value ? countedCount(selectedRow.value) : 0,
 );
 const itemOptions = computed(() =>
   props.rows.map((row) => ({
@@ -51,8 +44,8 @@ const overviewHeight = computed(() =>
   Math.max(360, props.rows.length * 60 + 90),
 );
 
-function bandedCount(row: ItemDistributionRow): number {
-  return row.calculated_count - row.unbanded_count;
+function countedCount(row: ItemDistributionRow): number {
+  return row.calculated_count;
 }
 
 function share(count: number, denominator: number): number {
@@ -76,11 +69,11 @@ async function drawOverview() {
     animationDuration: 350,
     color: bandColors,
     grid: { bottom: 66, containLabel: false, left: 260, right: 24, top: 16 },
-    legend: { bottom: 4, data: bandTitles, type: 'scroll' },
-    series: bandTitles.map((title, bandIndex) => ({
+    legend: { bottom: 4, data: itemBandTitles, type: 'scroll' },
+    series: itemBandTitles.map((title, bandIndex) => ({
       barMaxWidth: 24,
       data: props.rows.map((row) =>
-        share(row.bands[bandIndex]?.count ?? 0, bandedCount(row)),
+        share(row.bands[bandIndex]?.count ?? 0, countedCount(row)),
       ),
       emphasis: { focus: 'series' },
       name: title,
@@ -99,9 +92,9 @@ async function drawOverview() {
         const heading = document.createElement('strong');
         heading.textContent = row.item.name;
         container.append(heading);
-        const denominator = bandedCount(row);
+        const denominator = countedCount(row);
         const summary = document.createElement('div');
-        summary.textContent = `已计入 ${row.calculated_count} 人 · 已分档 ${denominator} 人 · 无法归一化 ${row.unbanded_count} 人`;
+        summary.textContent = `计入人数：${denominator} 人`;
         container.append(summary);
         if (denominator === 0) {
           const empty = document.createElement('div');
@@ -111,7 +104,7 @@ async function drawOverview() {
           row.bands.forEach((band, index) => {
             container.append(
               tooltipLine(
-                bandTitles[index] ?? band.label,
+                itemBandTitles[index] ?? band.label,
                 band.count,
                 denominator,
               ),
@@ -138,10 +131,10 @@ async function drawOverview() {
             return code;
           }
           const name =
-            bandedCount(row) === 0
+            countedCount(row) === 0
               ? `${row.item.name} · 暂无可分档数据`
               : row.item.name;
-          return `${name}\n已计入 ${row.calculated_count} · 无法归一化 ${row.unbanded_count}`;
+          return `${name}\n计入 ${row.calculated_count} 人`;
         },
         lineHeight: 16,
         overflow: 'truncate',
@@ -168,7 +161,7 @@ async function drawOverview() {
 
 function drawDetail() {
   const row = selectedRow.value;
-  const denominator = selectedBandedCount.value;
+  const denominator = selectedCount.value;
   if (!row || denominator === 0) {
     return;
   }
@@ -196,7 +189,7 @@ function drawDetail() {
         const band = row.bands[entry?.dataIndex ?? -1];
         return band
           ? tooltipLine(
-              bandTitles[entry?.dataIndex ?? -1] ?? band.label,
+              itemBandTitles[entry?.dataIndex ?? -1] ?? band.label,
               band.count,
               denominator,
             )
@@ -211,7 +204,7 @@ function drawDetail() {
       type: 'value',
     },
     yAxis: {
-      data: bandTitles,
+      data: itemBandTitles,
       inverse: true,
       type: 'category',
     },
@@ -258,23 +251,23 @@ watch(
       <Button @click="emit('openDetails')">分档明细</Button>
     </template>
     <Tabs v-model:active-key="activeTab" destroy-on-hidden>
-      <TabPane key="overview" tab="各项目五档占比">
+      <TabPane key="overview" tab="各项目四档占比">
         <p class="mb-3 text-sm text-muted-foreground">
-          每条以该项目已分档人数为
-          100%；悬停可查看五档人数，点击项目可查看详情。
+          每条以该项目计入人数为
+          100%；悬停可查看四档人数，点击项目可查看详情。此分档仅供平台分析，不代表政策成绩等级。
         </p>
         <div class="overflow-x-auto md:overflow-visible">
           <EchartsUI
             ref="overviewRef"
             :height="`${overviewHeight}px`"
-            aria-label="各项目五档得分率占比图"
+            aria-label="各项目四档得分率占比图"
             class="min-w-[640px] md:min-w-0"
             role="img"
           />
         </div>
       </TabPane>
 
-      <TabPane key="detail" tab="项目分档详情">
+      <TabPane key="detail" tab="项目四档详情">
         <div class="flex flex-col gap-4">
           <label class="grid gap-1">
             <span>考试项目</span>
@@ -289,46 +282,22 @@ watch(
             />
           </label>
           <template v-if="selectedRow">
-            <div class="grid grid-cols-3 gap-3">
-              <Statistic title="已计入" :value="selectedRow.calculated_count" />
-              <Statistic title="已分档" :value="selectedBandedCount" />
-              <Statistic
-                title="无法归一化"
-                :value="selectedRow.unbanded_count"
-              />
-            </div>
-            <div v-if="selectedBandedCount > 0" class="grid grid-cols-2 gap-3">
-              <div
-                class="rounded-md border-l-4 border-orange-500 bg-orange-50 p-3 dark:bg-orange-950/30"
-              >
-                <div class="text-sm">不足 20%</div>
-                <div class="text-lg font-semibold">{{ lowBandShare }}%</div>
-                <div class="text-sm text-muted-foreground">
-                  {{ lowBandCount }} 人
-                </div>
-              </div>
-              <div
-                class="rounded-md border-l-4 border-indigo-500 bg-indigo-50 p-3 dark:bg-indigo-950/30"
-              >
-                <div class="text-sm">80%～100%</div>
-                <div class="text-lg font-semibold">{{ highBandShare }}%</div>
-                <div class="text-sm text-muted-foreground">
-                  {{ highBandCount }} 人
-                </div>
-              </div>
+            <div class="grid grid-cols-1 gap-3">
+              <Statistic title="计入人数" :value="selectedCount" />
             </div>
             <p class="text-sm text-muted-foreground">
               {{
                 categoryLabels[selectedRow.item.category] ??
                 selectedRow.item.category
               }}
-              · 五档按项目得分率划分；无法归一化的记录不参与占比计算。
+              ·
+              平台分析分档（非政策等级），按项目得分率划分，占比以计入人数为分母。
             </p>
             <EchartsUI
-              v-if="selectedBandedCount > 0"
+              v-if="selectedCount > 0"
               ref="detailRef"
               height="320px"
-              :aria-label="`${selectedRow.item.name}五档人数和占比图`"
+              :aria-label="`${selectedRow.item.name}四档人数和占比图`"
               role="img"
             />
             <div

@@ -180,7 +180,7 @@ onMounted(() => {
 <template>
   <Page
     :title="pageTitle"
-    description="按项目得分率展示五档分布；不同项目的计入人数可能不同。"
+    description="平台分析分档（非政策等级）：按项目得分率划分不及格、及格、良好、优秀；不同项目的计入人数可能不同。"
   >
     <div class="flex flex-col gap-4">
       <Card>
