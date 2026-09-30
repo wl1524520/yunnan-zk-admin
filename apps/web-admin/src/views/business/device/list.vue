@@ -1,5 +1,8 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { Device, DeviceKey, IssuedDeviceKey } from '#/api/business/device';
 
 import { ref } from 'vue';
@@ -14,7 +17,6 @@ import {
   Modal,
   Select,
   Space,
-  Tag,
 } from 'antdv-next';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -27,8 +29,10 @@ import {
 } from '#/api/business/device';
 import { getSchoolList } from '#/api/business/school';
 
-import { useColumns, useKeyColumns } from './data';
+import { useColumns, useGridFormSchema, useKeyColumns } from './data';
 import Form from './modules/form.vue';
+
+const canWrite = true;
 
 const saving = ref(false);
 const schoolDevice = ref<Device>();
@@ -43,17 +47,23 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: { schema: useGridFormSchema(), submitOnChange: true },
   gridOptions: {
-    columns: useColumns(),
+    columns: useColumns(onActionClick, canWrite),
     height: 'auto',
     pagerConfig: { pageSize: 20 },
     proxyConfig: {
       ajax: {
-        query: ({ page }) => getDeviceList(page.currentPage, page.pageSize),
+        query: ({ page }, formValues) =>
+          getDeviceList({
+            ...formValues,
+            page: page.currentPage,
+            per_page: page.pageSize,
+          }),
       },
     },
     rowConfig: { keyField: 'id' },
-    toolbarConfig: { refresh: true, zoom: true },
+    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<Device>,
 });
 const [KeyGrid, keyGridApi] = useVbenVxeGrid({
@@ -131,33 +141,38 @@ async function revokeKey(key: DeviceKey) {
   message.success('密钥已撤销');
   await loadKeys();
 }
+
+function onActionClick({ code, row }: OnActionClickParams<Device>) {
+  switch (code) {
+    case 'assign-school': {
+      openAssignment(row);
+      break;
+    }
+    case 'edit': {
+      formDrawerApi.setData(row).open();
+      break;
+    }
+    case 'keys': {
+      openKeys(row);
+      break;
+    }
+    // 无默认分支
+  }
+}
 </script>
 
 <template>
-  <Page
-    auto-content-height
-    title="设备台账"
-    description="登记设备、分配学校并管理签名密钥；新密钥明文只显示一次。"
-  >
+  <Page auto-content-height>
     <FormDrawer @success="gridApi.query()" />
-    <Grid>
+    <Grid table-title="设备台账">
       <template #toolbar-tools>
-        <Button type="primary" @click="formDrawerApi.setData({}).open()">
-          新增设备
+        <Button
+          v-if="canWrite"
+          type="primary"
+          @click="formDrawerApi.setData({}).open()"
+        >
+          新增
         </Button>
-      </template>
-      <template #school="{ row }">{{ row.school?.name || '未分配' }}</template>
-      <template #status="{ row }">
-        <Tag>{{ row.status }}</Tag>
-      </template>
-      <template #actions="{ row }">
-        <Space>
-          <Button type="link" @click="formDrawerApi.setData(row).open()">
-            编辑
-          </Button>
-          <Button type="link" @click="openAssignment(row)">分配学校</Button>
-          <Button type="link" @click="openKeys(row)">密钥</Button>
-        </Space>
       </template>
     </Grid>
 
@@ -206,6 +221,12 @@ async function revokeKey(key: DeviceKey) {
         >
           标识：{{ issuedKey.key_id }}<br />密钥：{{ issuedKey.secret }}
         </div>
+        <Alert
+          type="info"
+          class="mb-4"
+          show-icon
+          message="新密钥明文仅在签发时显示一次，请提前准备安全的保存方式。"
+        />
         <Space class="mb-3">
           <Button type="primary" :loading="saving" @click="issueKey">
             签发／轮换密钥

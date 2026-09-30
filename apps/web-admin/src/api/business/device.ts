@@ -33,10 +33,8 @@ export interface DevicePayload {
   status: string;
 }
 
-export function getDeviceList(page: number, perPage = 20) {
-  return requestClient.get<PageResult<Device>>('/devices', {
-    params: { page, per_page: perPage },
-  });
+export function getDeviceList(params?: Record<string, unknown>) {
+  return requestClient.get<PageResult<Device>>('/devices', { params });
 }
 
 export function createDevice(data: DevicePayload) {
