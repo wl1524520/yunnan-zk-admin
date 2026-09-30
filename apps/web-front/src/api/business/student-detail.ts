@@ -8,6 +8,8 @@ export interface StudentDetail {
   name: string;
   gender: string;
   status: string;
+  /** 最新学年下的年级；未建档时为空。 */
+  grade: null | number;
   school_id: string;
   school_class_id?: string;
   school?: { name: string };
@@ -46,10 +48,11 @@ export interface Attempt {
 
 export interface TermResult {
   id: string;
+  grade: number;
   academic_term?: { id: string; term_no: number };
   academic_year?: { code: string };
   status: string;
-  term_score?: string;
+  term_score: null | string;
   source_revision: number;
   calculated_revision: number;
   pending_exam_item_codes: string[];
@@ -59,12 +62,12 @@ export interface GradeResult {
   id: string;
   grade: number;
   academic_year?: { code: string };
-  grade_score?: string;
+  grade_score: null | string;
   status: string;
 }
 
 export interface TotalResult {
-  total_score?: string;
+  total_score: null | string;
   status: string;
 }
 
@@ -106,7 +109,10 @@ export function getStudentMovements(id: string) {
 }
 
 export function getStudentTotalResult(id: string) {
-  return requestClient.get<TotalResult>(`/students/${id}/total-result`);
+  // 保留 Axios 错误的 HTTP 状态码，供调用方区分“尚无总分”的 404。
+  return requestClient.instance.get<TotalResult, TotalResult>(
+    `/students/${id}/total-result`,
+  );
 }
 
 export function createStudentMovement(

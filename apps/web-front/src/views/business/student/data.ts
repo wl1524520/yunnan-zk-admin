@@ -186,13 +186,14 @@ export function useColumns(
     {
       field: 'operation',
       title: '操作',
-      width: 120,
+      width: 190,
       fixed: 'right',
       cellRender: {
         name: 'CellOperation',
         attrs: { onClick: onActionClick },
         options: [
           { code: 'detail', text: '档案' },
+          { code: 'transcript', text: '成绩单' },
           { code: 'edit', text: '编辑', show: canWrite },
         ],
       },

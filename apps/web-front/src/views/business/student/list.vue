@@ -23,6 +23,7 @@ import Detail from './modules/detail.vue';
 import Form from './modules/form.vue';
 import StudentImport from './modules/import.vue';
 import Selection from './modules/selection.vue';
+import Transcript from './modules/transcript.vue';
 
 const roles = useUserStore().userInfo?.roles ?? [];
 const canWrite = roles.includes('school');
@@ -37,6 +38,10 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
 });
 const [DetailDrawer, detailDrawerApi] = useVbenDrawer({
   connectedComponent: Detail,
+  destroyOnClose: true,
+});
+const [TranscriptDrawer, transcriptDrawerApi] = useVbenDrawer({
+  connectedComponent: Transcript,
   destroyOnClose: true,
 });
 const [ImportDrawer, importDrawerApi] = useVbenDrawer({
@@ -85,6 +90,7 @@ function onRefresh() {
 function onActionClick({ code, row }: OnActionClickParams<Student>) {
   if (code === 'edit') formDrawerApi.setData(row).open();
   if (code === 'detail') detailDrawerApi.setData(row).open();
+  if (code === 'transcript') transcriptDrawerApi.setData(row).open();
 }
 
 const onBatchMenuClick: MenuProps['onClick'] = ({ key }) => {
@@ -127,6 +133,7 @@ onMounted(async () => {
   <Page auto-content-height>
     <FormDrawer @success="onRefresh()" />
     <DetailDrawer @success="onRefresh()" />
+    <TranscriptDrawer />
     <ImportDrawer @success="onRefresh()" />
     <SelectionDrawer @success="onRefresh()" />
     <Grid>

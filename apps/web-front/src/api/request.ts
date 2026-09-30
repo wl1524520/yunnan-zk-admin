@@ -71,6 +71,12 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
 
   client.addResponseInterceptor(
     errorMessageResponseInterceptor((fallback, error) => {
+      if (
+        error?.response?.status === 404 &&
+        /^\/students\/[^/]+\/total-result$/.test(error?.config?.url ?? '')
+      ) {
+        return;
+      }
       const response = error?.response?.data;
       message.error(response?.message || fallback);
     }),
